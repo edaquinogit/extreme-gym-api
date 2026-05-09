@@ -1,0 +1,64 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Logs ###
+*.log
+logs/
+
+### Environment ###
+.env
+.env.*
+!.env.example
+
+### Temporary files ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.orig
+
+### Runtime dumps ###
+*.dump
+*.dumpstream
+hs_err_pid*
+replay_pid*
+
+### Local caches ###
+.cache/
+
+### OS generated files ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/

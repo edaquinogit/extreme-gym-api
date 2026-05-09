@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: extreme-postgres
+    environment:
+      POSTGRES_DB: extreme_db
+      POSTGRES_USER: extreme_user
+      POSTGRES_PASSWORD: extreme_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - extreme_data:/var/lib/postgresql/data
+
+volumes:
+  extreme_data:

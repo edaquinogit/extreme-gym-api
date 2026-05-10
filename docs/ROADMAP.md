@@ -55,12 +55,19 @@ Status: concluida.
 
 ## Fase 4: Matriculas
 
-Status: planejada.
+Status: concluida.
 
-- Relacionar alunos e planos.
-- Criar entidade de matricula.
-- Definir status inicial de matricula.
-- Criar endpoints necessarios para cadastro e consulta.
+- Entidade `Matricula` criada.
+- Enum `StatusMatricula` criado.
+- DTOs de entrada e saida criados.
+- Repository, service e controller criados.
+- Relacionamento com `Aluno` e `Plano` implementado.
+- Status inicial `ATIVA` definido.
+- Data final calculada pela duracao do plano.
+- Bloqueio de plano inativo em matriculas.
+- Bloqueio de mais de uma matricula `ATIVA` para o mesmo aluno.
+- Cancelamento por alteracao de status para `CANCELADA`.
+- Testes unitarios do service adicionados.
 
 ## Fase 5: Pagamentos
 

@@ -358,3 +358,134 @@ Possiveis status HTTP:
 
 - `204 No Content`: plano desativado.
 - `404 Not Found`: plano nao encontrado.
+
+## POST /matriculas
+
+Objetivo: criar uma matricula conectando um aluno existente a um plano ativo.
+
+Metodo HTTP: `POST`
+
+Path: `/matriculas`
+
+Request:
+
+```json
+{
+  "alunoId": 1,
+  "planoId": 1,
+  "dataInicio": "2026-05-09"
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "id": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "dataInicio": "2026-05-09",
+  "dataFim": "2026-06-08",
+  "status": "ATIVA",
+  "dataCadastro": "2026-05-09T23:10:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `201 Created`: matricula criada.
+- `400 Bad Request`: dados invalidos.
+- `400 Bad Request`: plano inativo.
+- `400 Bad Request`: aluno ja possui matricula ativa.
+- `404 Not Found`: aluno nao encontrado.
+- `404 Not Found`: plano nao encontrado.
+
+## GET /matriculas
+
+Objetivo: listar matriculas cadastradas.
+
+Metodo HTTP: `GET`
+
+Path: `/matriculas`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "planoId": 1,
+    "planoNome": "Plano Mensal",
+    "dataInicio": "2026-05-09",
+    "dataFim": "2026-06-08",
+    "status": "ATIVA",
+    "dataCadastro": "2026-05-09T23:10:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.
+
+## GET /matriculas/{id}
+
+Objetivo: buscar uma matricula pelo identificador.
+
+Metodo HTTP: `GET`
+
+Path: `/matriculas/{id}`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "dataInicio": "2026-05-09",
+  "dataFim": "2026-06-08",
+  "status": "ATIVA",
+  "dataCadastro": "2026-05-09T23:10:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: matricula encontrada.
+- `404 Not Found`: matricula nao encontrada.
+
+## PATCH /matriculas/{id}/cancelar
+
+Objetivo: cancelar uma matricula existente sem exclusao fisica.
+
+Metodo HTTP: `PATCH`
+
+Path: `/matriculas/{id}/cancelar`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "dataInicio": "2026-05-09",
+  "dataFim": "2026-06-08",
+  "status": "CANCELADA",
+  "dataCadastro": "2026-05-09T23:10:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: matricula cancelada.
+- `404 Not Found`: matricula nao encontrada.

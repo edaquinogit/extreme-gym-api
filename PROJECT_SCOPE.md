@@ -25,7 +25,7 @@ O MVP deve contemplar, em ordem:
 | --- | --- | --- |
 | Alunos | Implementado e refinado | CRUD basico, validacoes, tratamento de erros e testes unitarios |
 | Planos | Implementado | CRUD basico, validacoes, nome unico, remocao logica e testes unitarios |
-| Matriculas | Planejado | Depende de Alunos e Planos |
+| Matriculas | Implementado | Conecta Alunos e Planos, impede matricula ativa duplicada, calcula vigencia e permite cancelamento |
 | Pagamentos | Planejado | Depende de Matriculas |
 | Check-ins | Planejado | Depende da base de alunos e matriculas |
 
@@ -58,7 +58,7 @@ Integracoes com catraca, QR Code, Face ID e controle fisico de acesso sao evoluc
 - `Pagamento`
 - `CheckIn`
 
-Neste momento, `Aluno` e `Plano` foram implementadas.
+Neste momento, `Aluno`, `Plano` e `Matricula` foram implementadas.
 
 ## Regras de negocio iniciais
 
@@ -66,6 +66,9 @@ Neste momento, `Aluno` e `Plano` foram implementadas.
 - Email de aluno nao pode ser duplicado.
 - Um plano deve possuir nome, valor e descricao basica.
 - Uma matricula deve relacionar um aluno a um plano.
+- Uma matricula deve usar apenas planos ativos.
+- Um aluno nao pode possuir mais de uma matricula ativa ao mesmo tempo.
+- Uma matricula cancelada nao deve ser excluida fisicamente.
 - Um pagamento deve estar associado a uma matricula.
 - Um check-in deve estar associado a um aluno matriculado.
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
@@ -79,7 +82,7 @@ Neste momento, `Aluno` e `Plano` foram implementadas.
 3. CRUD de alunos. Concluido.
 4. Refinamento de Alunos com validacoes, erros padronizados e testes. Concluido.
 5. CRUD de planos. Concluido.
-6. Matriculas. Proximo passo.
+6. Matriculas. Concluido.
 7. Pagamentos.
 8. Check-ins.
 9. Testes adicionais conforme crescimento do dominio.

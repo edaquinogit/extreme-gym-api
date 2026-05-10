@@ -30,7 +30,23 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Todo plano novo inicia ativo.
 - A data de cadastro e definida automaticamente na persistencia.
 - A remocao de plano e logica, alterando `ativo` para `false`.
-- Plano inativo nao deve ser usado em matriculas futuramente.
+- Plano inativo nao deve ser usado em matriculas.
+
+## Matriculas
+
+- Matricula conecta um aluno a um plano.
+- Aluno e obrigatorio.
+- Plano e obrigatorio.
+- Data de inicio e obrigatoria.
+- Aluno deve existir para criar matricula.
+- Plano deve existir para criar matricula.
+- Plano precisa estar ativo para ser usado em matricula.
+- Aluno nao pode ter mais de uma matricula `ATIVA` ao mesmo tempo.
+- A data final da matricula e calculada com base na data de inicio mais a duracao em dias do plano.
+- Toda matricula nova inicia com status `ATIVA`.
+- A data de cadastro e definida automaticamente na persistencia.
+- Cancelamento altera o status da matricula para `CANCELADA`.
+- Matricula nao deve ser apagada fisicamente.
 
 ## Organizacao das regras
 
@@ -43,7 +59,6 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 
 Ainda nao existem regras implementadas para:
 
-- Matriculas.
 - Pagamentos.
 - Check-ins.
 - Autenticacao.

@@ -24,7 +24,7 @@ O MVP deve contemplar, em ordem:
 | Modulo | Status | Observacao |
 | --- | --- | --- |
 | Alunos | Implementado e refinado | CRUD basico, validacoes, tratamento de erros e testes unitarios |
-| Planos | Proximo modulo | Ainda nao implementado |
+| Planos | Implementado | CRUD basico, validacoes, nome unico, remocao logica e testes unitarios |
 | Matriculas | Planejado | Depende de Alunos e Planos |
 | Pagamentos | Planejado | Depende de Matriculas |
 | Check-ins | Planejado | Depende da base de alunos e matriculas |
@@ -58,7 +58,7 @@ Integracoes com catraca, QR Code, Face ID e controle fisico de acesso sao evoluc
 - `Pagamento`
 - `CheckIn`
 
-Neste momento, apenas `Aluno` foi implementada.
+Neste momento, `Aluno` e `Plano` foram implementadas.
 
 ## Regras de negocio iniciais
 
@@ -78,8 +78,8 @@ Neste momento, apenas `Aluno` foi implementada.
 2. Estrutura inicial de pacotes. Concluido.
 3. CRUD de alunos. Concluido.
 4. Refinamento de Alunos com validacoes, erros padronizados e testes. Concluido.
-5. CRUD de planos. Proximo passo.
-6. Matriculas.
+5. CRUD de planos. Concluido.
+6. Matriculas. Proximo passo.
 7. Pagamentos.
 8. Check-ins.
 9. Testes adicionais conforme crescimento do dominio.

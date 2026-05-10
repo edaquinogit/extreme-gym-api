@@ -205,3 +205,156 @@ Possiveis status HTTP:
 
 - `204 No Content`: aluno removido.
 - `404 Not Found`: aluno nao encontrado.
+
+## POST /planos
+
+Objetivo: cadastrar um plano.
+
+Metodo HTTP: `POST`
+
+Path: `/planos`
+
+Request:
+
+```json
+{
+  "nome": "Plano Mensal",
+  "descricao": "Acesso livre a academia por 30 dias",
+  "valorMensal": 99.90,
+  "duracaoEmDias": 30
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "id": 1,
+  "nome": "Plano Mensal",
+  "descricao": "Acesso livre a academia por 30 dias",
+  "valorMensal": 99.90,
+  "duracaoEmDias": 30,
+  "ativo": true,
+  "dataCadastro": "2026-05-09T22:45:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `201 Created`: plano cadastrado.
+- `400 Bad Request`: dados invalidos.
+- `400 Bad Request`: nome ja cadastrado.
+
+## GET /planos
+
+Objetivo: listar planos cadastrados.
+
+Metodo HTTP: `GET`
+
+Path: `/planos`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "nome": "Plano Mensal",
+    "descricao": "Acesso livre a academia por 30 dias",
+    "valorMensal": 99.90,
+    "duracaoEmDias": 30,
+    "ativo": true,
+    "dataCadastro": "2026-05-09T22:45:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.
+
+## GET /planos/{id}
+
+Objetivo: buscar um plano pelo identificador.
+
+Metodo HTTP: `GET`
+
+Path: `/planos/{id}`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "nome": "Plano Mensal",
+  "descricao": "Acesso livre a academia por 30 dias",
+  "valorMensal": 99.90,
+  "duracaoEmDias": 30,
+  "ativo": true,
+  "dataCadastro": "2026-05-09T22:45:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: plano encontrado.
+- `404 Not Found`: plano nao encontrado.
+
+## PUT /planos/{id}
+
+Objetivo: atualizar os dados de um plano.
+
+Metodo HTTP: `PUT`
+
+Path: `/planos/{id}`
+
+Request:
+
+```json
+{
+  "nome": "Plano Mensal",
+  "descricao": "Acesso completo a academia por 30 dias",
+  "valorMensal": 109.90,
+  "duracaoEmDias": 30
+}
+```
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "nome": "Plano Mensal",
+  "descricao": "Acesso completo a academia por 30 dias",
+  "valorMensal": 109.90,
+  "duracaoEmDias": 30,
+  "ativo": true,
+  "dataCadastro": "2026-05-09T22:45:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: plano atualizado.
+- `400 Bad Request`: dados invalidos.
+- `400 Bad Request`: nome pertence a outro plano.
+- `404 Not Found`: plano nao encontrado.
+
+## DELETE /planos/{id}
+
+Objetivo: desativar um plano pelo identificador, sem exclusao fisica.
+
+Metodo HTTP: `DELETE`
+
+Path: `/planos/{id}`
+
+Response `204 No Content`:
+
+```text
+Sem corpo de resposta.
+```
+
+Possiveis status HTTP:
+
+- `204 No Content`: plano desativado.
+- `404 Not Found`: plano nao encontrado.

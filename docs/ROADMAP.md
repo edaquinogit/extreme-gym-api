@@ -42,14 +42,16 @@ Status: concluida e refinada.
 
 ## Fase 3: CRUD de planos
 
-Status: proxima fase.
+Status: concluida.
 
-- Criar entidade de plano.
-- Criar DTOs de entrada e saida.
-- Criar repository, service e controller.
-- Validar dados principais do plano.
-- Adicionar testes unitarios do service.
-- Manter o mesmo padrao de erros e organizacao usado em Alunos.
+- Entidade `Plano` criada.
+- DTOs de entrada e saida criados.
+- Repository, service e controller criados.
+- Validacoes aplicadas em `PlanoRequestDTO`.
+- Regra de nome duplicado implementada no cadastro e na atualizacao.
+- Remocao logica implementada, desativando o plano.
+- Testes unitarios do service adicionados.
+- Mesmo padrao de erros e organizacao usado em Alunos mantido.
 
 ## Fase 4: Matriculas
 

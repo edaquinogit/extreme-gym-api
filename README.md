@@ -10,7 +10,7 @@ O projeto foi estruturado para evoluir de forma incremental, com separacao clara
 
 ## Status atual
 
-O projeto possui o modulo de Alunos implementado e refinado.
+O projeto possui os modulos de Alunos e Planos implementados.
 
 Ja esta disponivel:
 
@@ -23,8 +23,9 @@ Ja esta disponivel:
 - DTOs para entrada e saida.
 - Testes unitarios do service com JUnit e Mockito.
 - Endpoint raiz `GET /` para verificar se a API esta respondendo.
+- CRUD de planos com validacoes, regra de nome unico e remocao logica.
 
-Proximo modulo planejado: Planos.
+Proximo modulo planejado: Matriculas.
 
 ## Stack utilizada
 
@@ -56,6 +57,20 @@ Proximo modulo planejado: Planos.
 - Respostas de erro padronizadas.
 - Testes unitarios para os principais cenarios de service.
 
+### Planos
+
+- Cadastro de plano.
+- Listagem de planos.
+- Busca de plano por id.
+- Atualizacao de plano.
+- Desativacao de plano por remocao logica.
+- Validacao de nome, valor mensal e duracao em dias.
+- Bloqueio de nome duplicado no cadastro.
+- Bloqueio de nome duplicado na atualizacao, permitindo que o plano mantenha o proprio nome.
+- Status inicial do plano como ativo.
+- Data de cadastro preenchida automaticamente.
+- Testes unitarios para os principais cenarios de service.
+
 ## Endpoints disponiveis
 
 | Metodo | Path | Objetivo |
@@ -66,6 +81,11 @@ Proximo modulo planejado: Planos.
 | `GET` | `/alunos/{id}` | Buscar aluno por id |
 | `PUT` | `/alunos/{id}` | Atualizar aluno |
 | `DELETE` | `/alunos/{id}` | Remover aluno |
+| `POST` | `/planos` | Cadastrar plano |
+| `GET` | `/planos` | Listar planos |
+| `GET` | `/planos/{id}` | Buscar plano por id |
+| `PUT` | `/planos/{id}` | Atualizar plano |
+| `DELETE` | `/planos/{id}` | Desativar plano |
 
 Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
@@ -143,7 +163,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 11 testes e 0 falhas.
+Na ultima validacao, a suite passou com 21 testes e 0 falhas.
 
 ## Documentacao adicional
 
@@ -158,7 +178,6 @@ Na ultima validacao, a suite passou com 11 testes e 0 falhas.
 
 Ainda nao foram implementados:
 
-- Modulo de Planos.
 - Matriculas.
 - Pagamentos.
 - Check-ins.
@@ -174,4 +193,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico e implementar o modulo de Planos, mantendo o mesmo padrao aplicado em Alunos: DTOs, validacoes, tratamento de erros, service com regras de negocio e testes unitarios.
+O proximo passo tecnico e implementar o modulo de Matriculas, relacionando Alunos e Planos sem quebrar o historico de planos desativados.

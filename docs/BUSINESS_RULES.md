@@ -16,6 +16,22 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Todo aluno novo recebe status inicial `ATIVO`.
 - A data de cadastro e definida automaticamente na persistencia.
 
+## Planos
+
+- Nome e obrigatorio.
+- Nome deve ter entre 3 e 80 caracteres.
+- Nome nao pode ser duplicado no cadastro.
+- Na atualizacao, o plano pode manter o proprio nome.
+- Na atualizacao, outro plano nao pode usar nome ja cadastrado.
+- Valor mensal e obrigatorio.
+- Valor mensal deve ser maior que zero.
+- Duracao em dias e obrigatoria.
+- Duracao em dias deve ser maior que zero.
+- Todo plano novo inicia ativo.
+- A data de cadastro e definida automaticamente na persistencia.
+- A remocao de plano e logica, alterando `ativo` para `false`.
+- Plano inativo nao deve ser usado em matriculas futuramente.
+
 ## Organizacao das regras
 
 - Validacoes de formato e obrigatoriedade ficam nos DTOs de entrada.
@@ -27,7 +43,6 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 
 Ainda nao existem regras implementadas para:
 
-- Planos.
 - Matriculas.
 - Pagamentos.
 - Check-ins.

@@ -489,3 +489,174 @@ Possiveis status HTTP:
 
 - `200 OK`: matricula cancelada.
 - `404 Not Found`: matricula nao encontrada.
+
+## POST /pagamentos
+
+Objetivo: registrar um pagamento confirmado para uma matricula ativa.
+
+Metodo HTTP: `POST`
+
+Path: `/pagamentos`
+
+Request:
+
+```json
+{
+  "matriculaId": 1,
+  "valor": 99.90,
+  "formaPagamento": "PIX"
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "id": 1,
+  "matriculaId": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "valor": 99.90,
+  "formaPagamento": "PIX",
+  "status": "PAGO",
+  "dataPagamento": "2026-05-09T23:30:10.12345",
+  "dataCadastro": "2026-05-09T23:30:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `201 Created`: pagamento registrado.
+- `400 Bad Request`: dados invalidos.
+- `400 Bad Request`: matricula cancelada.
+- `400 Bad Request`: matricula vencida nesta versao inicial.
+- `400 Bad Request`: matricula ja possui pagamento pago registrado.
+- `404 Not Found`: matricula nao encontrada.
+
+## GET /pagamentos
+
+Objetivo: listar pagamentos cadastrados.
+
+Metodo HTTP: `GET`
+
+Path: `/pagamentos`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "matriculaId": 1,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "planoId": 1,
+    "planoNome": "Plano Mensal",
+    "valor": 99.90,
+    "formaPagamento": "PIX",
+    "status": "PAGO",
+    "dataPagamento": "2026-05-09T23:30:10.12345",
+    "dataCadastro": "2026-05-09T23:30:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.
+
+## GET /pagamentos/{id}
+
+Objetivo: buscar um pagamento pelo identificador.
+
+Metodo HTTP: `GET`
+
+Path: `/pagamentos/{id}`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "matriculaId": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "valor": 99.90,
+  "formaPagamento": "PIX",
+  "status": "PAGO",
+  "dataPagamento": "2026-05-09T23:30:10.12345",
+  "dataCadastro": "2026-05-09T23:30:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: pagamento encontrado.
+- `404 Not Found`: pagamento nao encontrado.
+
+## GET /pagamentos/matricula/{matriculaId}
+
+Objetivo: listar pagamentos vinculados a uma matricula.
+
+Metodo HTTP: `GET`
+
+Path: `/pagamentos/matricula/{matriculaId}`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "matriculaId": 1,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "planoId": 1,
+    "planoNome": "Plano Mensal",
+    "valor": 99.90,
+    "formaPagamento": "PIX",
+    "status": "PAGO",
+    "dataPagamento": "2026-05-09T23:30:10.12345",
+    "dataCadastro": "2026-05-09T23:30:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.
+
+## PATCH /pagamentos/{id}/cancelar
+
+Objetivo: cancelar um pagamento existente sem exclusao fisica.
+
+Metodo HTTP: `PATCH`
+
+Path: `/pagamentos/{id}/cancelar`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "matriculaId": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "planoId": 1,
+  "planoNome": "Plano Mensal",
+  "valor": 99.90,
+  "formaPagamento": "PIX",
+  "status": "CANCELADO",
+  "dataPagamento": "2026-05-09T23:30:10.12345",
+  "dataCadastro": "2026-05-09T23:30:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: pagamento cancelado.
+- `404 Not Found`: pagamento nao encontrado.

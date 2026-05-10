@@ -26,8 +26,9 @@ O MVP deve contemplar, em ordem:
 | Alunos | Implementado e refinado | CRUD basico, validacoes, tratamento de erros e testes unitarios |
 | Planos | Implementado | CRUD basico, validacoes, nome unico, remocao logica e testes unitarios |
 | Matriculas | Implementado | Conecta Alunos e Planos, impede matricula ativa duplicada, calcula vigencia e permite cancelamento |
-| Pagamentos | Planejado | Depende de Matriculas |
-| Check-ins | Planejado | Depende da base de alunos e matriculas |
+| Pagamentos | Implementado | Registra pagamentos confirmados, impede duplicidade de pagamento PAGO e permite cancelamento logico |
+| Check-ins | Planejado | Proxima fase, depende da base de alunos e matriculas |
+| Validacao de Acesso | Planejado | Fase futura apos Check-ins |
 
 ## Fora do escopo atual
 
@@ -58,7 +59,7 @@ Integracoes com catraca, QR Code, Face ID e controle fisico de acesso sao evoluc
 - `Pagamento`
 - `CheckIn`
 
-Neste momento, `Aluno`, `Plano` e `Matricula` foram implementadas.
+Neste momento, `Aluno`, `Plano`, `Matricula` e `Pagamento` foram implementadas.
 
 ## Regras de negocio iniciais
 
@@ -70,6 +71,9 @@ Neste momento, `Aluno`, `Plano` e `Matricula` foram implementadas.
 - Um aluno nao pode possuir mais de uma matricula ativa ao mesmo tempo.
 - Uma matricula cancelada nao deve ser excluida fisicamente.
 - Um pagamento deve estar associado a uma matricula.
+- Uma matricula deve estar ativa para receber pagamento.
+- Um pagamento registrado inicia com status `PAGO`.
+- Um pagamento cancelado nao deve ser excluido fisicamente.
 - Um check-in deve estar associado a um aluno matriculado.
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
 - Regras devem ficar na camada de service, evitando logica de negocio em controllers.
@@ -83,7 +87,7 @@ Neste momento, `Aluno`, `Plano` e `Matricula` foram implementadas.
 4. Refinamento de Alunos com validacoes, erros padronizados e testes. Concluido.
 5. CRUD de planos. Concluido.
 6. Matriculas. Concluido.
-7. Pagamentos.
+7. Pagamentos. Concluido.
 8. Check-ins.
 9. Testes adicionais conforme crescimento do dominio.
 10. Swagger.

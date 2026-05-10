@@ -10,7 +10,7 @@ O projeto foi estruturado para evoluir de forma incremental, com separacao clara
 
 ## Status atual
 
-O projeto possui os modulos de Alunos, Planos e Matriculas implementados.
+O projeto possui os modulos de Alunos, Planos, Matriculas e Pagamentos implementados.
 
 Ja esta disponivel:
 
@@ -25,8 +25,9 @@ Ja esta disponivel:
 - Endpoint raiz `GET /` para verificar se a API esta respondendo.
 - CRUD de planos com validacoes, regra de nome unico e remocao logica.
 - Gerenciamento de matriculas conectando aluno e plano.
+- Gerenciamento de pagamentos confirmados vinculados a matriculas.
 
-Proximo modulo planejado: Pagamentos.
+Proximo modulo planejado: Check-ins.
 
 ## Stack utilizada
 
@@ -86,6 +87,21 @@ Proximo modulo planejado: Pagamentos.
 - Data de cadastro preenchida automaticamente.
 - Testes unitarios para os principais cenarios de service.
 
+### Pagamentos
+
+- Registro de pagamento vinculado a matricula.
+- Listagem de pagamentos.
+- Busca de pagamento por id.
+- Listagem de pagamentos por matricula.
+- Cancelamento de pagamento por alteracao de status.
+- Validacao de matricula existente e ativa.
+- Bloqueio de pagamento para matricula `CANCELADA`.
+- Bloqueio de pagamento para matricula `VENCIDA` nesta versao inicial.
+- Bloqueio de pagamento `PAGO` duplicado para a mesma matricula.
+- Status inicial do pagamento registrado como `PAGO`.
+- Data de pagamento e data de cadastro preenchidas automaticamente.
+- Testes unitarios para os principais cenarios de service.
+
 ## Endpoints disponiveis
 
 | Metodo | Path | Objetivo |
@@ -105,6 +121,11 @@ Proximo modulo planejado: Pagamentos.
 | `GET` | `/matriculas` | Listar matriculas |
 | `GET` | `/matriculas/{id}` | Buscar matricula por id |
 | `PATCH` | `/matriculas/{id}/cancelar` | Cancelar matricula |
+| `POST` | `/pagamentos` | Registrar pagamento |
+| `GET` | `/pagamentos` | Listar pagamentos |
+| `GET` | `/pagamentos/{id}` | Buscar pagamento por id |
+| `GET` | `/pagamentos/matricula/{matriculaId}` | Listar pagamentos por matricula |
+| `PATCH` | `/pagamentos/{id}/cancelar` | Cancelar pagamento |
 
 Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
@@ -182,7 +203,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 31 testes e 0 falhas.
+Na ultima validacao, a suite passou com 42 testes e 0 falhas.
 
 ## Documentacao adicional
 
@@ -197,7 +218,6 @@ Na ultima validacao, a suite passou com 31 testes e 0 falhas.
 
 Ainda nao foram implementados:
 
-- Pagamentos.
 - Check-ins.
 - Autenticacao JWT.
 - Swagger.
@@ -211,4 +231,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico e implementar o modulo de Pagamentos, associado as matriculas ja criadas.
+O proximo passo tecnico e implementar o modulo de Check-ins, usando a base de alunos, planos, matriculas e pagamentos ja criada.

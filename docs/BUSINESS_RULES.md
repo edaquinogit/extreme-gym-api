@@ -48,6 +48,24 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Cancelamento altera o status da matricula para `CANCELADA`.
 - Matricula nao deve ser apagada fisicamente.
 
+## Pagamentos
+
+- Pagamento pertence a uma matricula.
+- Matricula e obrigatoria.
+- Matricula deve existir para registrar pagamento.
+- Matricula precisa estar `ATIVA` para receber pagamento.
+- Matricula `CANCELADA` nao recebe pagamento.
+- Matricula `VENCIDA` nao recebe pagamento nesta versao inicial.
+- Valor e obrigatorio.
+- Valor deve ser maior que zero.
+- Forma de pagamento e obrigatoria.
+- Pagamento registrado inicia com status `PAGO`.
+- Pagamento `PAGO` duplicado para a mesma matricula nao e permitido nesta versao.
+- A data de pagamento e definida automaticamente no registro.
+- A data de cadastro e definida automaticamente na persistencia.
+- Cancelamento altera o status do pagamento para `CANCELADO`.
+- Pagamento nao deve ser apagado fisicamente.
+
 ## Organizacao das regras
 
 - Validacoes de formato e obrigatoriedade ficam nos DTOs de entrada.
@@ -59,7 +77,7 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 
 Ainda nao existem regras implementadas para:
 
-- Pagamentos.
 - Check-ins.
+- Validacao de Acesso.
 - Autenticacao.
 - Controle fisico de acesso.

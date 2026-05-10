@@ -71,14 +71,22 @@ Status: concluida.
 
 ## Fase 5: Pagamentos
 
-Status: planejada.
+Status: concluida.
 
-- Criar entidade de pagamento.
-- Associar pagamentos a matriculas.
-- Definir status basicos de pagamento.
-- Criar endpoints de registro e consulta.
+- Entidade `Pagamento` criada.
+- Enums `StatusPagamento` e `FormaPagamento` criados.
+- DTOs de entrada e saida criados.
+- Repository, service e controller criados.
+- Relacionamento com `Matricula` implementado.
+- Registro de pagamentos confirmados com status inicial `PAGO`.
+- Data de pagamento e data de cadastro definidas automaticamente.
+- Bloqueio de pagamento para matricula `CANCELADA`.
+- Bloqueio de pagamento para matricula `VENCIDA` nesta versao inicial.
+- Bloqueio de pagamento `PAGO` duplicado para a mesma matricula.
+- Cancelamento por alteracao de status para `CANCELADO`.
+- Testes unitarios do service adicionados.
 
-## Fase 6: Check-in
+## Fase 6: Check-ins
 
 Status: planejada.
 

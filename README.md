@@ -31,6 +31,37 @@ Ja esta disponivel:
 
 Proximo passo planejado: testes de qualidade e documentacao interativa da API.
 
+## Fluxo completo do MVP
+
+O fluxo operacional implementado no MVP e:
+
+1. Cadastrar o aluno em `POST /alunos`.
+2. Cadastrar um plano ativo em `POST /planos`.
+3. Criar a matricula em `POST /matriculas`, vinculando aluno e plano.
+4. Registrar o pagamento confirmado em `POST /pagamentos`.
+5. Validar acesso em `POST /acessos/validar`, quando a necessidade for apenas saber se o aluno pode entrar.
+6. Registrar a tentativa real de entrada em `POST /checkins`, mantendo historico de acesso permitido ou bloqueado.
+
+## Ordem das regras de acesso
+
+A decisao de acesso segue esta ordem:
+
+1. Aluno deve existir.
+2. Aluno nao pode estar `BLOQUEADO`.
+3. Aluno nao pode estar `CANCELADO`.
+4. Aluno nao pode estar `INADIMPLENTE`.
+5. Aluno deve possuir matricula `ATIVA`.
+6. Matricula ativa nao pode estar vencida pela data final.
+7. Matricula deve possuir pagamento `PAGO`.
+
+Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a resposta retorna acesso bloqueado com motivo claro.
+
+## Validacao de Acesso x Check-in
+
+`POST /acessos/validar` e uma consulta somente leitura. Ela informa se o aluno pode acessar a academia naquele momento e nao registra tentativa, nao cria check-in e nao altera dados no banco.
+
+`POST /checkins` representa a tentativa real de entrada. Ele reutiliza a mesma decisao de acesso e grava o historico da tentativa, tanto quando o acesso e permitido quanto quando e bloqueado.
+
 ## Stack utilizada
 
 - Java 21

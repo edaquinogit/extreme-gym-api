@@ -71,6 +71,7 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Check-in pertence a um aluno.
 - Check-in permitido deve estar associado a uma matricula.
 - Aluno deve existir para registrar check-in.
+- Check-in reutiliza a decisao da Validacao de Acesso.
 - Aluno `BLOQUEADO` nao pode entrar.
 - Aluno `CANCELADO` nao pode entrar.
 - Aluno `INADIMPLENTE` nao pode entrar.
@@ -98,6 +99,24 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Validacao de acesso nao altera dados no banco.
 - Respostas de validacao de acesso nao devem expor entidades completas de aluno ou matricula.
 - Catraca, QR Code e Face ID sao integracoes futuras, ainda nao implementadas.
+
+## Ordem da decisao de acesso
+
+1. Aluno deve existir.
+2. Aluno `BLOQUEADO` e bloqueado.
+3. Aluno `CANCELADO` e bloqueado.
+4. Aluno `INADIMPLENTE` e bloqueado.
+5. Aluno sem matricula `ATIVA` e bloqueado.
+6. Matricula ativa vencida pela data final e bloqueada.
+7. Matricula sem pagamento `PAGO` e bloqueada.
+8. Se nenhuma regra bloquear, o acesso e liberado.
+
+## Diferenca entre Validacao de Acesso e Check-in
+
+- Validacao de Acesso responde se o aluno pode entrar, sem alterar o banco.
+- Check-in registra a tentativa real de entrada.
+- Check-in grava tanto tentativas permitidas quanto bloqueadas.
+- As duas rotas usam a mesma decisao de acesso para evitar duplicacao de regra.
 
 ## Automacao de lembretes e retencao de alunos
 

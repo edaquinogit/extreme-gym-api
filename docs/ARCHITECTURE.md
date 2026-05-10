@@ -80,5 +80,33 @@ Essa camada deve ser usada apenas quando houver configuracoes reais a centraliza
 - Bean Validation para validacao de entradas.
 - Lombok para reduzir codigo repetitivo.
 - `spring.jpa.hibernate.ddl-auto=update` apenas para desenvolvimento local inicial.
-- Testes unitarios ja foram iniciados no modulo de Alunos.
-- Flyway, Swagger, testes de integracao e autenticacao serao avaliados em fases futuras.
+- Testes unitarios cobrem os services dos modulos implementados no MVP.
+- O profile de teste usa H2, mantendo PostgreSQL para execucao local via Docker.
+- Flyway, Swagger, testes de integracao, Testcontainers e autenticacao serao avaliados em fases futuras.
+
+## Fluxo do MVP
+
+O fluxo principal do MVP passa por:
+
+1. Cadastro do aluno.
+2. Cadastro do plano.
+3. Criacao da matricula ativa vinculando aluno e plano.
+4. Registro do pagamento confirmado da matricula.
+5. Validacao de acesso quando for necessario apenas consultar se o aluno pode entrar.
+6. Registro de check-in quando houver tentativa real de entrada e necessidade de historico.
+
+## Validacao de Acesso e Check-in
+
+`AcessoService` centraliza a decisao de entrada e e somente leitura. Ele consulta aluno, matricula ativa e pagamento pago, retornando o motivo de liberacao ou bloqueio.
+
+`CheckInService` reutiliza `AcessoService` para evitar duplicacao de regras. A diferenca e que o check-in persiste a tentativa de entrada, inclusive quando bloqueada, enquanto a validacao de acesso apenas responde a decisao.
+
+## Ordem das regras de acesso
+
+1. Buscar aluno existente.
+2. Bloquear aluno `BLOQUEADO`.
+3. Bloquear aluno `CANCELADO`.
+4. Bloquear aluno `INADIMPLENTE`.
+5. Exigir matricula `ATIVA`.
+6. Bloquear matricula vencida pela data final.
+7. Exigir pagamento `PAGO`.

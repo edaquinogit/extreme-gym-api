@@ -70,16 +70,17 @@ O envio real por WhatsApp ficara fora do MVP atual e, quando avaliado, devera us
 
 A regra de frequencia dependera do modulo de Check-ins. A regra de inadimplencia dependera da evolucao do modulo de Pagamentos com controle de vencimentos.
 
-## Entidades planejadas
+## Entidades do MVP
 
 - `Aluno`
 - `Plano`
 - `Matricula`
 - `Pagamento`
 - `CheckIn`
-- `Acesso`
 
-Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento`, `CheckIn` e a camada de Validacao de Acesso foram implementadas.
+Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento` e `CheckIn` foram implementadas como entidades persistidas.
+
+Validacao de Acesso nao e uma entidade no MVP. Ela e uma camada de service e controller somente leitura para consultar se o aluno pode entrar sem registrar check-in e sem alterar dados no banco.
 
 ## Regras de negocio iniciais
 
@@ -102,6 +103,8 @@ Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento`, `CheckIn` e a camada 
 - A validacao de acesso nao registra check-in.
 - A validacao de acesso nao altera dados no banco.
 - Acesso liberado exige aluno apto, matricula ativa, matricula nao vencida e pagamento pago.
+- A ordem da validacao de acesso e: aluno existente, status do aluno, matricula ativa, validade da matricula e pagamento pago.
+- Check-in reutiliza a validacao de acesso e persiste o historico da tentativa.
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
 - Regras devem ficar na camada de service, evitando logica de negocio em controllers.
 - Controllers devem receber requisicoes, delegar ao service e retornar respostas HTTP adequadas.

@@ -75,6 +75,7 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - Lombok
 - JUnit
 - Mockito
+- springdoc-openapi
 
 ## Funcionalidades implementadas
 
@@ -194,6 +195,18 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 
 Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
+## Documentacao da API com Swagger
+
+A API expoe documentacao automatica com Swagger/OpenAPI usando springdoc-openapi.
+
+Com a aplicacao rodando em `localhost:8080`, acesse:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Swagger UI alternativo: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+O Swagger permite visualizar e testar os endpoints da API pelo navegador. Ele e apenas documentacao interativa da API; nao adiciona autenticacao, autorizacao ou deploy.
+
 ## Como rodar localmente
 
 Entre na raiz real do projeto, onde estao o `pom.xml` e o `docker-compose.yml`.
@@ -284,7 +297,6 @@ Na ultima validacao, a suite passou com 62 testes e 0 falhas.
 Ainda nao foram implementados:
 
 - Autenticacao JWT.
-- Swagger.
 - Flyway.
 - Dockerfile.
 - Deploy.
@@ -295,4 +307,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico recomendado e fortalecer a qualidade do projeto com mais testes, documentacao interativa com Swagger ou uma fase futura de notificacoes, sem adicionar integracoes fisicas antes da hora.
+O proximo passo tecnico recomendado e fortalecer a qualidade do projeto com mais testes, evoluir a documentacao dos endpoints quando necessario ou planejar uma fase futura de notificacoes, sem adicionar integracoes fisicas antes da hora.

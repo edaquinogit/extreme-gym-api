@@ -82,6 +82,16 @@ Resposta esperada:
 }
 ```
 
+## Acessar Swagger
+
+Com a aplicacao rodando em `localhost:8080`, a documentacao interativa da API fica disponivel em:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Swagger UI alternativo: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+O Swagger permite visualizar e testar endpoints da API pelo navegador. Ele nao substitui autenticacao, deploy ou configuracoes de producao.
+
 ## Erro: porta 8080 ja esta em uso
 
 Se a aplicacao falhar com a mensagem `Port 8080 was already in use`, ja existe outro processo usando a porta `8080`.
@@ -150,7 +160,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na validacao atual do projeto, a suite automatizada passou com 11 testes e 0 falhas.
+Na validacao atual do projeto, a suite automatizada passou com 62 testes e 0 falhas.
 
 Antes de um commit, tambem e possivel rodar o script manual:
 

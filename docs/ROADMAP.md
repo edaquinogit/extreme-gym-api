@@ -127,10 +127,12 @@ Status: planejada conforme evolucao do dominio.
 
 ## Fase 9: Swagger
 
-Status: planejada para fase futura.
+Status: concluida.
 
-- Adicionar documentacao interativa da API.
-- Documentar endpoints, entradas, saidas e erros principais.
+- Documentacao interativa da API adicionada com springdoc-openapi.
+- Swagger UI disponivel para visualizar e testar endpoints.
+- OpenAPI JSON disponivel para ferramentas e integracoes.
+- Anotacoes detalhadas por endpoint mantidas para uma evolucao futura, se houver necessidade.
 
 ## Fase 10: Autenticacao JWT
 
@@ -148,6 +150,14 @@ Status: planejada para fase futura.
 - Revisar configuracoes para producao.
 - Avaliar uso de migrations com Flyway.
 - Planejar deploy em ambiente cloud.
+
+## Evolucao futura: Integracao com catraca, QR Code e Face ID
+
+Status: visao futura, fora do MVP atual.
+
+- Integrar a validacao de acesso com dispositivos fisicos somente em uma fase futura.
+- Avaliar QR Code, Face ID ou catraca conforme necessidade real.
+- Manter o endpoint `POST /acessos/validar` como base de decisao para integracoes futuras.
 
 ## Evolucao futura: Automacao de lembretes e retencao de alunos
 

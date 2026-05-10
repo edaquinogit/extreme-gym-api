@@ -29,6 +29,7 @@ Ja esta disponivel:
 - Registro de check-ins permitidos ou bloqueados, mantendo historico da tentativa.
 - Validacao de acesso sem registro de check-in, preparada para integracoes futuras.
 - Swagger/OpenAPI para documentacao interativa da API.
+- Dockerfile para empacotar e executar a aplicacao via container.
 - Testes unitarios de services e testes de integracao/controller com MockMvc.
 
 Ultima validacao conhecida: `118` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
@@ -72,6 +73,7 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - Spring Web
 - Spring Data JPA
 - PostgreSQL via Docker
+- Docker
 - H2 para testes
 - Bean Validation
 - Lombok
@@ -89,6 +91,7 @@ O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco e
 - Suite automatizada validada com `118` testes passando: `0` falhas, `0` erros e `0` ignorados.
 - Profile de teste com H2, mantendo os testes independentes do PostgreSQL local.
 - Ambiente de desenvolvimento usando PostgreSQL via Docker Compose.
+- Empacotamento da aplicacao com Dockerfile multi-stage e Java 21.
 - Swagger/OpenAPI disponivel como documentacao interativa para consulta e teste dos endpoints.
 
 Os detalhes de arquitetura, contrato da API, setup local e regras de negocio ficam concentrados na pasta [`docs`](docs), mantendo este README como visao geral do projeto.
@@ -283,6 +286,8 @@ Resposta esperada:
 }
 ```
 
+Tambem e possivel gerar e executar a imagem Docker da aplicacao. Os comandos completos ficam em [docs/SETUP.md](docs/SETUP.md).
+
 ## Rodar os testes
 
 No WSL:
@@ -314,7 +319,6 @@ Ainda nao foram implementados:
 
 - Autenticacao JWT.
 - Flyway.
-- Dockerfile.
 - Deploy.
 - Frontend.
 - Integracao com catraca, QR Code, Face ID ou controle fisico de acesso.

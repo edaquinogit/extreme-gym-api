@@ -82,6 +82,40 @@ Resposta esperada:
 }
 ```
 
+## Rodar a aplicacao com Docker
+
+O projeto possui um `Dockerfile` multi-stage que gera o jar com Maven Wrapper e executa a aplicacao com Java 21.
+
+Com o PostgreSQL local ja iniciado pelo Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Gere a imagem da aplicacao:
+
+```bash
+docker build -t extreme-gym-api .
+```
+
+Execute o container apontando a aplicacao para o PostgreSQL exposto na maquina host:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/extreme_db \
+  -e SPRING_DATASOURCE_USERNAME=extreme_user \
+  -e SPRING_DATASOURCE_PASSWORD=extreme_pass \
+  extreme-gym-api
+```
+
+No Linux puro, se `host.docker.internal` nao estiver disponivel, use o IP da maquina host ou uma rede Docker apropriada. Neste momento o projeto mantem apenas o Compose do banco; um Compose completo com app e banco fica para uma etapa futura.
+
+Valide:
+
+```bash
+curl http://localhost:8080/
+```
+
 ## Acessar Swagger
 
 Com a aplicacao rodando em `localhost:8080`, a documentacao interativa da API fica disponivel em:

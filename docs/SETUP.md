@@ -160,7 +160,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na validacao atual do projeto, a suite automatizada passou com 62 testes e 0 falhas.
+Na validacao atual do projeto, a suite automatizada passou com 118 testes, 0 falhas, 0 erros e 0 testes ignorados.
 
 Antes de um commit, tambem e possivel rodar o script manual:
 

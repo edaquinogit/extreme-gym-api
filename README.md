@@ -28,8 +28,10 @@ Ja esta disponivel:
 - Gerenciamento de pagamentos confirmados vinculados a matriculas.
 - Registro de check-ins permitidos ou bloqueados, mantendo historico da tentativa.
 - Validacao de acesso sem registro de check-in, preparada para integracoes futuras.
+- Swagger/OpenAPI para documentacao interativa da API.
+- Testes unitarios de services e testes de integracao/controller com MockMvc.
 
-Proximo passo planejado: testes de qualidade e documentacao interativa da API.
+Ultima validacao conhecida: `118` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
 
 ## Fluxo completo do MVP
 
@@ -76,6 +78,20 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - JUnit
 - Mockito
 - springdoc-openapi
+
+## Qualidade, testes e documentacao
+
+O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco em clareza de arquitetura, regras de negocio testaveis e documentacao objetiva para avaliacao tecnica.
+
+- Separacao em camadas: Controller, Service, Repository, DTO e Entity.
+- Testes unitarios cobrindo services e principais regras de negocio.
+- Testes de integracao/controller com MockMvc para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
+- Suite automatizada validada com `118` testes passando: `0` falhas, `0` erros e `0` ignorados.
+- Profile de teste com H2, mantendo os testes independentes do PostgreSQL local.
+- Ambiente de desenvolvimento usando PostgreSQL via Docker Compose.
+- Swagger/OpenAPI disponivel como documentacao interativa para consulta e teste dos endpoints.
+
+Os detalhes de arquitetura, contrato da API, setup local e regras de negocio ficam concentrados na pasta [`docs`](docs), mantendo este README como visao geral do projeto.
 
 ## Funcionalidades implementadas
 
@@ -281,7 +297,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 62 testes e 0 falhas.
+Na ultima validacao, a suite passou com 118 testes e 0 falhas.
 
 ## Documentacao adicional
 
@@ -307,4 +323,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico recomendado e fortalecer a qualidade do projeto com mais testes, evoluir a documentacao dos endpoints quando necessario ou planejar uma fase futura de notificacoes, sem adicionar integracoes fisicas antes da hora.
+O proximo passo tecnico recomendado e planejar uma fase futura de autenticacao, deploy ou notificacoes, mantendo integracoes fisicas fora do MVP atual ate haver necessidade real.

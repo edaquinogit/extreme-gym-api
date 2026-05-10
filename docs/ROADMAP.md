@@ -121,12 +121,13 @@ Status: concluida.
 
 ## Fase 8: Testes adicionais e qualidade
 
-Status: planejada conforme evolucao do dominio.
+Status: concluida para o escopo atual do MVP.
 
-- Expandir testes unitarios para novos services.
-- Avaliar testes de integracao para controllers.
-- Validar cenarios principais do MVP.
-- Revisar cobertura de regras de negocio e contratos HTTP.
+- Testes unitarios adicionados para services dos modulos principais.
+- Testes de integracao/controller com MockMvc adicionados para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
+- Cenarios principais do MVP validados pela suite automatizada.
+- Ultima validacao conhecida: 118 testes executados, 0 falhas, 0 erros e 0 ignorados.
+- Novos testes devem acompanhar futuras regras de negocio, autenticacao, deploy ou integracoes.
 
 ## Fase 9: Swagger
 

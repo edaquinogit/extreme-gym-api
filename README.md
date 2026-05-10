@@ -10,7 +10,7 @@ O projeto foi estruturado para evoluir de forma incremental, com separacao clara
 
 ## Status atual
 
-O projeto possui os modulos de Alunos, Planos, Matriculas, Pagamentos e Check-ins implementados.
+O projeto possui os modulos de Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso implementados.
 
 Ja esta disponivel:
 
@@ -27,8 +27,9 @@ Ja esta disponivel:
 - Gerenciamento de matriculas conectando aluno e plano.
 - Gerenciamento de pagamentos confirmados vinculados a matriculas.
 - Registro de check-ins permitidos ou bloqueados, mantendo historico da tentativa.
+- Validacao de acesso sem registro de check-in, preparada para integracoes futuras.
 
-Proximo modulo planejado: Validacao de Acesso.
+Proximo passo planejado: testes de qualidade e documentacao interativa da API.
 
 ## Stack utilizada
 
@@ -118,6 +119,18 @@ Proximo modulo planejado: Validacao de Acesso.
 - Resposta sem expor entidades completas de aluno ou matricula.
 - Testes unitarios para os principais cenarios de service.
 
+### Validacao de Acesso
+
+- Validacao se um aluno pode acessar a academia sem registrar check-in.
+- Bloqueio de acesso para aluno `BLOQUEADO`, `CANCELADO` ou `INADIMPLENTE`.
+- Exigencia de matricula `ATIVA`, nao vencida e com pagamento `PAGO`.
+- Retorno de motivo claro para acesso liberado ou bloqueado.
+- Resposta sem expor entidades completas de aluno ou matricula.
+- Service somente leitura, sem alteracao de banco.
+- Preparacao para futuras integracoes com catraca, QR Code ou Face ID.
+- Nenhuma integracao fisica foi implementada nesta fase.
+- Testes unitarios para os principais cenarios de service.
+
 ## Endpoints disponiveis
 
 | Metodo | Path | Objetivo |
@@ -146,6 +159,7 @@ Proximo modulo planejado: Validacao de Acesso.
 | `GET` | `/checkins` | Listar check-ins |
 | `GET` | `/checkins/{id}` | Buscar check-in por id |
 | `GET` | `/checkins/aluno/{alunoId}` | Listar check-ins por aluno |
+| `POST` | `/acessos/validar` | Validar se o aluno pode acessar a academia |
 
 Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
@@ -223,7 +237,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 42 testes e 0 falhas.
+Na ultima validacao, a suite passou com 62 testes e 0 falhas.
 
 ## Documentacao adicional
 
@@ -238,7 +252,6 @@ Na ultima validacao, a suite passou com 42 testes e 0 falhas.
 
 Ainda nao foram implementados:
 
-- Validacao de Acesso completa.
 - Autenticacao JWT.
 - Swagger.
 - Flyway.
@@ -251,4 +264,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico e implementar a camada de Validacao de Acesso, evoluindo a base de check-ins sem adicionar integracoes fisicas antes da hora.
+O proximo passo tecnico recomendado e fortalecer a qualidade do projeto com mais testes, documentacao interativa com Swagger ou uma fase futura de notificacoes, sem adicionar integracoes fisicas antes da hora.

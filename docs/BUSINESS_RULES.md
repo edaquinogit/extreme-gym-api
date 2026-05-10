@@ -83,6 +83,22 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Respostas de check-in nao devem expor entidades completas de aluno ou matricula.
 - A data e hora do check-in sao definidas automaticamente no registro.
 
+## Validacao de Acesso
+
+- Aluno deve existir para validar acesso.
+- Aluno `BLOQUEADO` nao pode acessar.
+- Aluno `CANCELADO` nao pode acessar.
+- Aluno `INADIMPLENTE` nao pode acessar.
+- Aluno precisa possuir matricula `ATIVA`.
+- Matricula ativa nao pode estar vencida pela data final.
+- Matricula precisa possuir pagamento `PAGO`.
+- Quando todas as regras passam, o acesso deve ser liberado com motivo `Acesso liberado`.
+- Quando alguma regra falha, o acesso deve ser bloqueado com motivo claro.
+- Validacao de acesso nao registra check-in.
+- Validacao de acesso nao altera dados no banco.
+- Respostas de validacao de acesso nao devem expor entidades completas de aluno ou matricula.
+- Catraca, QR Code e Face ID sao integracoes futuras, ainda nao implementadas.
+
 ## Automacao de lembretes e retencao de alunos
 
 Regras futuras, ainda nao implementadas:
@@ -109,7 +125,6 @@ Regras futuras, ainda nao implementadas:
 
 Ainda nao existem regras implementadas para:
 
-- Validacao de Acesso.
 - Autenticacao.
 - Controle fisico de acesso.
 - Envio real de mensagens por WhatsApp.

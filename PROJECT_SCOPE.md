@@ -15,6 +15,7 @@ O MVP deve contemplar, em ordem:
 - Criacao de matriculas.
 - Registro de pagamentos.
 - Registro de check-ins.
+- Validacao de acesso sem integracao fisica.
 - Validacoes de entrada.
 - Tratamento padronizado de erros.
 - Testes automatizados para regras principais.
@@ -28,7 +29,7 @@ O MVP deve contemplar, em ordem:
 | Matriculas | Implementado | Conecta Alunos e Planos, impede matricula ativa duplicada, calcula vigencia e permite cancelamento |
 | Pagamentos | Implementado | Registra pagamentos confirmados, impede duplicidade de pagamento PAGO e permite cancelamento logico |
 | Check-ins | Implementado | Registra tentativas permitidas ou bloqueadas com motivo claro |
-| Validacao de Acesso | Planejado | Fase futura apos Check-ins |
+| Validacao de Acesso | Implementado | Valida se o aluno pode acessar sem registrar check-in ou alterar banco |
 
 ## Fora do escopo atual
 
@@ -76,8 +77,9 @@ A regra de frequencia dependera do modulo de Check-ins. A regra de inadimplencia
 - `Matricula`
 - `Pagamento`
 - `CheckIn`
+- `Acesso`
 
-Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento` e `CheckIn` foram implementadas.
+Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento`, `CheckIn` e a camada de Validacao de Acesso foram implementadas.
 
 ## Regras de negocio iniciais
 
@@ -96,6 +98,10 @@ Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento` e `CheckIn` foram impl
 - Um check-in deve registrar tentativa permitida ou bloqueada.
 - Aluno bloqueado, cancelado ou inadimplente nao pode realizar check-in permitido.
 - Check-in permitido exige matricula ativa, nao vencida e com pagamento pago.
+- A validacao de acesso apenas informa se o aluno pode entrar.
+- A validacao de acesso nao registra check-in.
+- A validacao de acesso nao altera dados no banco.
+- Acesso liberado exige aluno apto, matricula ativa, matricula nao vencida e pagamento pago.
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
 - Regras devem ficar na camada de service, evitando logica de negocio em controllers.
 - Controllers devem receber requisicoes, delegar ao service e retornar respostas HTTP adequadas.
@@ -110,7 +116,7 @@ Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento` e `CheckIn` foram impl
 6. Matriculas. Concluido.
 7. Pagamentos. Concluido.
 8. Check-ins. Concluido.
-9. Validacao de Acesso.
+9. Validacao de Acesso. Concluido.
 10. Testes adicionais conforme crescimento do dominio.
 11. Swagger.
 12. Autenticacao JWT.

@@ -104,19 +104,26 @@ Status: concluida.
 
 ## Fase 7: Validacao de Acesso
 
-Status: planejada.
+Status: concluida.
 
-- Evoluir as regras de liberacao de entrada a partir dos check-ins.
-- Definir contratos especificos para cenarios de acesso.
-- Manter integracoes fisicas como catraca, QR Code e Face ID fora desta fase inicial.
+- DTOs de entrada e saida criados.
+- Controller `POST /acessos/validar` criado.
+- Service de validacao de acesso criado como camada somente leitura.
+- Decisao de acesso separada da acao de registrar check-in.
+- Bloqueio de aluno `BLOQUEADO`, `CANCELADO` ou `INADIMPLENTE`.
+- Exigencia de matricula `ATIVA`, nao vencida e com pagamento `PAGO`.
+- Resposta com motivo claro para acesso liberado ou bloqueado.
+- Testes unitarios do service adicionados.
+- Integracoes fisicas como catraca, QR Code e Face ID mantidas fora desta fase inicial.
 
-## Fase 8: Testes adicionais
+## Fase 8: Testes adicionais e qualidade
 
 Status: planejada conforme evolucao do dominio.
 
 - Expandir testes unitarios para novos services.
 - Avaliar testes de integracao para controllers.
 - Validar cenarios principais do MVP.
+- Revisar cobertura de regras de negocio e contratos HTTP.
 
 ## Fase 9: Swagger
 

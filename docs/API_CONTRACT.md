@@ -123,6 +123,54 @@ Possiveis status HTTP:
 
 - `200 OK`: lista retornada. Pode retornar lista vazia.
 
+## POST /acessos/validar
+
+Objetivo: validar se um aluno pode acessar a academia sem registrar check-in e sem alterar dados no banco.
+
+Metodo HTTP: `POST`
+
+Path: `/acessos/validar`
+
+Request:
+
+```json
+{
+  "alunoId": 1
+}
+```
+
+Response `200 OK` para acesso liberado:
+
+```json
+{
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "acessoLiberado": true,
+  "motivo": "Acesso liberado",
+  "matriculaId": 1,
+  "dataValidadeMatricula": "2026-06-09"
+}
+```
+
+Response `200 OK` para acesso bloqueado:
+
+```json
+{
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "acessoLiberado": false,
+  "motivo": "Aluno nao possui matricula ativa",
+  "matriculaId": null,
+  "dataValidadeMatricula": null
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: validacao realizada.
+- `400 Bad Request`: dados invalidos.
+- `404 Not Found`: aluno nao encontrado.
+
 ## GET /alunos/{id}
 
 Objetivo: buscar um aluno pelo identificador.

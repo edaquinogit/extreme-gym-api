@@ -15,12 +15,8 @@ import com.extreme.gym.entity.Matricula;
 import com.extreme.gym.entity.Plano;
 import com.extreme.gym.enums.StatusAluno;
 import com.extreme.gym.enums.StatusMatricula;
-import com.extreme.gym.enums.StatusPagamento;
 import com.extreme.gym.exception.ResourceNotFoundException;
-import com.extreme.gym.repository.AlunoRepository;
 import com.extreme.gym.repository.CheckInRepository;
-import com.extreme.gym.repository.MatriculaRepository;
-import com.extreme.gym.repository.PagamentoRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,13 +35,7 @@ class CheckInServiceTest {
     private CheckInRepository checkInRepository;
 
     @Mock
-    private AlunoRepository alunoRepository;
-
-    @Mock
-    private MatriculaRepository matriculaRepository;
-
-    @Mock
-    private PagamentoRepository pagamentoRepository;
+    private AcessoService acessoService;
 
     @InjectMocks
     private CheckInService checkInService;
@@ -56,11 +46,8 @@ class CheckInServiceTest {
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
         Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
-        when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
-                .thenReturn(Optional.of(matricula));
-        when(pagamentoRepository.existsByMatriculaIdAndStatus(matricula.getId(), StatusPagamento.PAGO))
-                .thenReturn(true);
+        when(acessoService.validarAluno(alunoId))
+                .thenReturn(new AcessoService.ResultadoAcesso(aluno, matricula, true, "Acesso liberado"));
         when(checkInRepository.save(any(CheckIn.class))).thenAnswer(invocation -> {
             CheckIn checkIn = invocation.getArgument(0);
             checkIn.setId(1L);
@@ -83,7 +70,8 @@ class CheckInServiceTest {
     void naoDeveRegistrarCheckInParaAlunoInexistente() {
         Long alunoId = 99L;
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.empty());
+        when(acessoService.validarAluno(alunoId))
+                .thenThrow(new ResourceNotFoundException("Aluno nao encontrado com id: 99"));
 
         assertThatThrownBy(() -> checkInService.registrar(new CheckInRequestDTO(alunoId)))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -99,7 +87,7 @@ class CheckInServiceTest {
         assertThat(response.permitido()).isFalse();
         assertThat(response.matriculaId()).isNull();
         assertThat(response.motivo()).isEqualTo("Aluno bloqueado");
-        verify(matriculaRepository, never()).findByAlunoIdAndStatus(any(), any());
+        verify(acessoService).validarAluno(1L);
     }
 
     @Test
@@ -109,7 +97,7 @@ class CheckInServiceTest {
         assertThat(response.permitido()).isFalse();
         assertThat(response.matriculaId()).isNull();
         assertThat(response.motivo()).isEqualTo("Aluno cancelado");
-        verify(matriculaRepository, never()).findByAlunoIdAndStatus(any(), any());
+        verify(acessoService).validarAluno(1L);
     }
 
     @Test
@@ -119,7 +107,7 @@ class CheckInServiceTest {
         assertThat(response.permitido()).isFalse();
         assertThat(response.matriculaId()).isNull();
         assertThat(response.motivo()).isEqualTo("Aluno inadimplente");
-        verify(matriculaRepository, never()).findByAlunoIdAndStatus(any(), any());
+        verify(acessoService).validarAluno(1L);
     }
 
     @Test
@@ -127,9 +115,13 @@ class CheckInServiceTest {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
-        when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
-                .thenReturn(Optional.empty());
+        when(acessoService.validarAluno(alunoId))
+                .thenReturn(new AcessoService.ResultadoAcesso(
+                        aluno,
+                        null,
+                        false,
+                        "Aluno nao possui matricula ativa"
+                ));
         mockSave();
 
         CheckInResponseDTO response = checkInService.registrar(new CheckInRequestDTO(alunoId));
@@ -146,9 +138,8 @@ class CheckInServiceTest {
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
         Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().minusDays(1));
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
-        when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
-                .thenReturn(Optional.of(matricula));
+        when(acessoService.validarAluno(alunoId))
+                .thenReturn(new AcessoService.ResultadoAcesso(aluno, matricula, false, "Matricula vencida"));
         mockSave();
 
         CheckInResponseDTO response = checkInService.registrar(new CheckInRequestDTO(alunoId));
@@ -156,7 +147,6 @@ class CheckInServiceTest {
         assertThat(response.permitido()).isFalse();
         assertThat(response.matriculaId()).isNull();
         assertThat(response.motivo()).isEqualTo("Matricula vencida");
-        verify(pagamentoRepository, never()).existsByMatriculaIdAndStatus(any(), any());
         verify(checkInRepository).save(any(CheckIn.class));
     }
 
@@ -166,11 +156,13 @@ class CheckInServiceTest {
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
         Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
-        when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
-                .thenReturn(Optional.of(matricula));
-        when(pagamentoRepository.existsByMatriculaIdAndStatus(matricula.getId(), StatusPagamento.PAGO))
-                .thenReturn(false);
+        when(acessoService.validarAluno(alunoId))
+                .thenReturn(new AcessoService.ResultadoAcesso(
+                        aluno,
+                        matricula,
+                        false,
+                        "Matricula nao possui pagamento pago"
+                ));
         mockSave();
 
         CheckInResponseDTO response = checkInService.registrar(new CheckInRequestDTO(alunoId));
@@ -240,7 +232,18 @@ class CheckInServiceTest {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, status);
 
-        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
+        when(acessoService.validarAluno(alunoId))
+                .thenReturn(new AcessoService.ResultadoAcesso(
+                        aluno,
+                        null,
+                        false,
+                        switch (status) {
+                            case BLOQUEADO -> "Aluno bloqueado";
+                            case CANCELADO -> "Aluno cancelado";
+                            case INADIMPLENTE -> "Aluno inadimplente";
+                            default -> "Acesso bloqueado";
+                        }
+                ));
         mockSave();
 
         return checkInService.registrar(new CheckInRequestDTO(alunoId));

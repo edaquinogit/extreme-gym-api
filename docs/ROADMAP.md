@@ -102,6 +102,7 @@ Status: concluida.
 - Bloqueio quando nao existe pagamento `PAGO` para a matricula.
 - Tentativas bloqueadas tambem sao registradas com motivo claro.
 - Testes unitarios do service adicionados.
+- Testes de integracao/controller adicionados para os principais contratos HTTP.
 
 ## Fase 7: Validacao de Acesso
 

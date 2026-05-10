@@ -7,6 +7,7 @@ import com.extreme.gym.repository.CheckInRepository;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
 import com.extreme.gym.repository.PlanoRepository;
+import com.jayway.jsonpath.JsonPath;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -211,7 +212,7 @@ class PagamentoControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Number id = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
     }
 
@@ -222,7 +223,7 @@ class PagamentoControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Number id = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
     }
 
@@ -233,7 +234,7 @@ class PagamentoControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Number id = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
     }
 
@@ -244,7 +245,7 @@ class PagamentoControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Number id = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
     }
 

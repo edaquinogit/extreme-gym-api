@@ -1,6 +1,7 @@
 package com.extreme.gym.controller;
 
 import com.extreme.gym.repository.AlunoRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,7 +141,7 @@ class AlunoControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Number id = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
     }
 

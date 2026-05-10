@@ -39,6 +39,18 @@ Erros de validacao incluem o objeto `errors`:
 }
 ```
 
+Payloads invalidos ou malformados tambem retornam `400 Bad Request` no mesmo formato de erro simples:
+
+```json
+{
+  "timestamp": "2026-05-10T12:00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Payload invalido ou malformado",
+  "path": "/alunos"
+}
+```
+
 ## GET /
 
 Objetivo: verificar se a API esta rodando.

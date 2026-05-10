@@ -92,6 +92,19 @@ class AlunoControllerIntegrationTest {
     }
 
     @Test
+    void deveRetornarErroPadronizadoQuandoPayloadForMalformado() throws Exception {
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"nome\": \"Ana Silva\", "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Payload invalido ou malformado"))
+                .andExpect(jsonPath("$.path").value("/alunos"));
+    }
+
+    @Test
     void deveRetornarErroQuandoEmailForDuplicadoNoCadastro() throws Exception {
         criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
 

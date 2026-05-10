@@ -242,19 +242,19 @@ No PowerShell:
 cd C:\Users\ednal\Documents\Projetos\extreme-gym-api\extreme-gym-api
 ```
 
-## Subir o banco de dados
+## Subir ambiente com Docker Compose
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-Verificar se o container esta rodando:
+Verificar se os containers estao rodando:
 
 ```bash
-docker ps
+docker compose ps
 ```
 
-O container esperado e `extreme-postgres`, usando a porta local `5432`.
+Os containers esperados sao `extreme-postgres` e `extreme-gym-api`. Os detalhes operacionais ficam em [docs/SETUP.md](docs/SETUP.md).
 
 ## Rodar a aplicacao
 
@@ -286,7 +286,7 @@ Resposta esperada:
 }
 ```
 
-Tambem e possivel gerar e executar a imagem Docker da aplicacao. Os comandos completos ficam em [docs/SETUP.md](docs/SETUP.md).
+Tambem e possivel gerar e executar apenas a imagem Docker da aplicacao. Os comandos completos ficam em [docs/SETUP.md](docs/SETUP.md).
 
 ## Rodar os testes
 

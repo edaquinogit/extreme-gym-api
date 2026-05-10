@@ -32,7 +32,7 @@ No PowerShell:
 echo $env:JAVA_HOME
 ```
 
-## Subir PostgreSQL
+## Subir ambiente com Docker Compose
 
 Entre na raiz real do projeto, onde estao `pom.xml` e `docker-compose.yml`.
 
@@ -40,21 +40,54 @@ No WSL:
 
 ```bash
 cd /mnt/c/Users/ednal/Documents/Projetos/extreme-gym-api/extreme-gym-api
-docker compose up -d
-docker ps
+docker compose up -d --build
+docker compose ps
 ```
 
 No PowerShell:
 
 ```powershell
 cd C:\Users\ednal\Documents\Projetos\extreme-gym-api\extreme-gym-api
-docker compose up -d
-docker ps
+docker compose up -d --build
+docker compose ps
 ```
 
-O container esperado e `extreme-postgres`.
+Os containers esperados sao `extreme-postgres` e `extreme-gym-api`.
 
-## Rodar a aplicacao
+O Docker Compose cria:
+
+- Servico `postgres` com PostgreSQL 16.
+- Servico `app` construido a partir do `Dockerfile` local.
+- Rede interna para comunicacao entre aplicacao e banco.
+- Volume nomeado `extreme_data` para persistencia do PostgreSQL.
+
+A aplicacao acessa o banco pelo host interno `postgres`, usando:
+
+```text
+jdbc:postgresql://postgres:5432/extreme_db
+```
+
+As credenciais configuradas no Compose sao apenas para desenvolvimento local:
+
+```text
+POSTGRES_DB=extreme_db
+POSTGRES_USER=extreme_user
+POSTGRES_PASSWORD=extreme_pass
+```
+
+Para acompanhar os logs da aplicacao:
+
+```bash
+docker compose logs app --tail=80
+```
+
+Para parar o ambiente:
+
+```bash
+docker compose down
+```
+
+## Rodar a aplicacao com Maven
 
 No WSL:
 
@@ -82,23 +115,17 @@ Resposta esperada:
 }
 ```
 
-## Rodar a aplicacao com Docker
+## Rodar apenas a imagem da aplicacao com Docker
 
-O projeto possui um `Dockerfile` multi-stage que gera o jar com Maven Wrapper e executa a aplicacao com Java 21.
+O projeto possui um `Dockerfile` multi-stage que gera o jar com Maven Wrapper e executa a aplicacao com Java 21. Para o ambiente completo, prefira `docker compose up -d --build`.
 
-Com o PostgreSQL local ja iniciado pelo Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-Gere a imagem da aplicacao:
+Se quiser gerar somente a imagem da aplicacao:
 
 ```bash
 docker build -t extreme-gym-api .
 ```
 
-Execute o container apontando a aplicacao para o PostgreSQL exposto na maquina host:
+Para executar apenas o container da API, mantenha um PostgreSQL acessivel e informe as variaveis de banco:
 
 ```bash
 docker run --rm -p 8080:8080 \
@@ -108,7 +135,7 @@ docker run --rm -p 8080:8080 \
   extreme-gym-api
 ```
 
-No Linux puro, se `host.docker.internal` nao estiver disponivel, use o IP da maquina host ou uma rede Docker apropriada. Neste momento o projeto mantem apenas o Compose do banco; um Compose completo com app e banco fica para uma etapa futura.
+No Linux puro, se `host.docker.internal` nao estiver disponivel, use o IP da maquina host ou uma rede Docker apropriada.
 
 Valide:
 

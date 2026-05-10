@@ -6,43 +6,68 @@ API REST para gestao de academia, desenvolvida com Java 21, Spring Boot e Postgr
 
 Construir uma API simples, limpa e evolutiva para organizar operacoes essenciais de uma academia, como cadastro de alunos, planos, matriculas, pagamentos e check-ins.
 
-## Problema que resolve
+O projeto foi estruturado para evoluir de forma incremental, com separacao clara entre controller, service, repository, DTOs, validacoes, tratamento de erros e testes automatizados.
 
-Academias pequenas e medias precisam centralizar informacoes basicas de alunos e operacoes recorrentes sem depender de controles manuais, planilhas soltas ou processos dificeis de acompanhar.
+## Status atual
 
-O projeto busca criar uma base tecnica profissional para esse dominio, com organizacao clara, infraestrutura local reproduzivel e evolucao incremental.
+O projeto possui o modulo de Alunos implementado e refinado.
+
+Ja esta disponivel:
+
+- Aplicacao Spring Boot rodando em `localhost:8080`.
+- PostgreSQL local via Docker Compose.
+- Profile de teste com H2.
+- CRUD basico de alunos.
+- Validacoes de entrada com Bean Validation.
+- Tratamento padronizado de erros.
+- DTOs para entrada e saida.
+- Testes unitarios do service com JUnit e Mockito.
+- Endpoint raiz `GET /` para verificar se a API esta respondendo.
+
+Proximo modulo planejado: Planos.
 
 ## Stack utilizada
 
 - Java 21
 - Spring Boot 3.5.14
+- Maven
 - Spring Web
 - Spring Data JPA
-- PostgreSQL
+- PostgreSQL via Docker
+- H2 para testes
 - Bean Validation
 - Lombok
-- Docker
-- Maven Wrapper
+- JUnit
+- Mockito
 
-## Funcionalidades planejadas
+## Funcionalidades implementadas
 
-- Cadastro de alunos
-- Cadastro de planos
-- Matriculas de alunos em planos
-- Controle de pagamentos
-- Registro de check-ins
-- Validacoes de entrada
-- Tratamento padronizado de erros
-- Documentacao da API com Swagger
-- Autenticacao futura com JWT
+### Alunos
 
-## Status atual do projeto
+- Cadastro de aluno.
+- Listagem de alunos.
+- Busca de aluno por id.
+- Atualizacao de aluno.
+- Remocao de aluno.
+- Validacao de nome, email e telefone.
+- Bloqueio de email duplicado no cadastro.
+- Bloqueio de email duplicado na atualizacao, permitindo que o aluno mantenha o proprio email.
+- Status inicial do aluno como `ATIVO`.
+- Respostas de erro padronizadas.
+- Testes unitarios para os principais cenarios de service.
 
-O projeto esta na fase inicial de setup e infraestrutura.
+## Endpoints disponiveis
 
-Ja existe uma aplicacao Spring Boot criada pelo Spring Initializr, com Maven Wrapper funcionando, dependencias principais configuradas e conexao local planejada com PostgreSQL via Docker Compose.
+| Metodo | Path | Objetivo |
+| --- | --- | --- |
+| `GET` | `/` | Verificar se a API esta rodando |
+| `POST` | `/alunos` | Cadastrar aluno |
+| `GET` | `/alunos` | Listar alunos |
+| `GET` | `/alunos/{id}` | Buscar aluno por id |
+| `PUT` | `/alunos/{id}` | Atualizar aluno |
+| `DELETE` | `/alunos/{id}` | Remover aluno |
 
-Ainda nao existem entidades, controllers, services, DTOs, autenticacao ou regras de negocio implementadas.
+Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
 ## Como rodar localmente
 
@@ -88,7 +113,21 @@ No PowerShell:
 .\mvnw spring-boot:run
 ```
 
-Quando aparecer `Tomcat started on port 8080`, significa que a aplicacao subiu corretamente e esta escutando requisicoes HTTP na porta `8080`.
+Quando aparecer `Tomcat started on port 8080`, a aplicacao esta escutando requisicoes HTTP em `localhost:8080`.
+
+Para validar rapidamente:
+
+```bash
+curl http://localhost:8080/
+```
+
+Resposta esperada:
+
+```json
+{
+  "message": "Extreme Gym API is running"
+}
+```
 
 ## Rodar os testes
 
@@ -104,23 +143,35 @@ No PowerShell:
 .\mvnw test
 ```
 
-O teste inicial valida apenas o carregamento basico do contexto da aplicacao. Testes de regras de negocio serao adicionados quando o dominio comecar a ser implementado.
+Na ultima validacao, a suite passou com 11 testes e 0 falhas.
 
-## Pendencias conhecidas de ambiente
+## Documentacao adicional
 
-- Se `docker compose up -d` retornar erro no WSL, verifique a integracao do Docker Desktop com o WSL ou execute o comando pelo PowerShell.
-- Se a aplicacao retornar `Connection refused` em `localhost:5432`, significa que o PostgreSQL nao esta rodando ou a porta `5432` nao esta disponivel.
+- [Escopo do projeto](PROJECT_SCOPE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Setup local](docs/SETUP.md)
+- [Contrato da API](docs/API_CONTRACT.md)
+- [Regras de negocio](docs/BUSINESS_RULES.md)
+- [Arquitetura](docs/ARCHITECTURE.md)
 
-## Regras principais do MVP
+## Fora do escopo atual
 
-- O MVP deve comecar pelo cadastro de alunos.
-- O cadastro de planos deve ser implementado antes de matriculas.
-- Matriculas devem associar alunos a planos existentes.
-- Pagamentos devem estar relacionados a matriculas.
-- Check-ins devem ser registrados apenas depois da base de alunos, planos e matriculas existir.
-- Autenticacao, Swagger e testes serao adicionados em fases posteriores.
-- O projeto deve evoluir sem overengineering, mantendo clareza e baixo acoplamento.
+Ainda nao foram implementados:
+
+- Modulo de Planos.
+- Matriculas.
+- Pagamentos.
+- Check-ins.
+- Autenticacao JWT.
+- Swagger.
+- Flyway.
+- Dockerfile.
+- Deploy.
+- Frontend.
+- Integracao com catraca, QR Code, Face ID ou controle fisico de acesso.
+
+Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico e garantir o PostgreSQL rodando localmente pelo Docker Compose e, em seguida, iniciar o CRUD de alunos.
+O proximo passo tecnico e implementar o modulo de Planos, mantendo o mesmo padrao aplicado em Alunos: DTOs, validacoes, tratamento de erros, service com regras de negocio e testes unitarios.

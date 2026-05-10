@@ -42,9 +42,7 @@ public class AlunoService {
     public AlunoResponseDTO atualizar(Long id, AlunoRequestDTO request) {
         Aluno aluno = buscarEntidadePorId(id);
 
-        if (!aluno.getEmail().equals(request.email())) {
-            validarEmailDuplicado(request.email());
-        }
+        validarEmailDuplicadoAoAtualizar(request.email(), id);
 
         aluno.setNome(request.nome());
         aluno.setEmail(request.email());
@@ -60,6 +58,12 @@ public class AlunoService {
 
     private void validarEmailDuplicado(String email) {
         if (alunoRepository.existsByEmail(email)) {
+            throw new BusinessException("Ja existe aluno cadastrado com este email");
+        }
+    }
+
+    private void validarEmailDuplicadoAoAtualizar(String email, Long id) {
+        if (alunoRepository.existsByEmailAndIdNot(email, id)) {
             throw new BusinessException("Ja existe aluno cadastrado com este email");
         }
     }

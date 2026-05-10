@@ -47,7 +47,8 @@ public class GlobalExceptionHandler {
         ApiValidationError response = new ApiValidationError(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Erro de validacao",
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Dados invalidos",
                 request.getRequestURI(),
                 errors
         );
@@ -59,6 +60,7 @@ public class GlobalExceptionHandler {
         ApiError response = new ApiError(
                 LocalDateTime.now(),
                 status.value(),
+                status.getReasonPhrase(),
                 message,
                 path
         );
@@ -69,6 +71,7 @@ public class GlobalExceptionHandler {
     private record ApiError(
             LocalDateTime timestamp,
             int status,
+            String error,
             String message,
             String path
     ) {
@@ -77,6 +80,7 @@ public class GlobalExceptionHandler {
     private record ApiValidationError(
             LocalDateTime timestamp,
             int status,
+            String error,
             String message,
             String path,
             Map<String, String> errors

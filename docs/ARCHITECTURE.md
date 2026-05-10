@@ -80,4 +80,5 @@ Essa camada deve ser usada apenas quando houver configuracoes reais a centraliza
 - Bean Validation para validacao de entradas.
 - Lombok para reduzir codigo repetitivo.
 - `spring.jpa.hibernate.ddl-auto=update` apenas para desenvolvimento local inicial.
-- Flyway, Swagger, testes e autenticacao serao adicionados em fases futuras.
+- Testes unitarios ja foram iniciados no modulo de Alunos.
+- Flyway, Swagger, testes de integracao e autenticacao serao avaliados em fases futuras.

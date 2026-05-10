@@ -10,25 +10,45 @@ O foco inicial e criar uma base tecnica clara, simples e profissional, adequada 
 
 O MVP deve contemplar, em ordem:
 
-- Cadastro de alunos
-- Cadastro de planos
-- Criacao de matriculas
-- Registro de pagamentos
-- Registro de check-ins
-- Validacoes basicas de entrada
-- Tratamento padronizado de erros
+- Cadastro e gerenciamento de alunos.
+- Cadastro e gerenciamento de planos.
+- Criacao de matriculas.
+- Registro de pagamentos.
+- Registro de check-ins.
+- Validacoes de entrada.
+- Tratamento padronizado de erros.
+- Testes automatizados para regras principais.
 
-## Fora do escopo por enquanto
+## Status por modulo
 
-- Autenticacao e autorizacao
-- Controle de perfis de usuario
-- Integracao com meios de pagamento
-- Envio de e-mails ou notificacoes
-- Relatorios avancados
-- Dashboard administrativo
-- Deploy em nuvem
-- Multiacademia ou multiempresa
-- Frontend
+| Modulo | Status | Observacao |
+| --- | --- | --- |
+| Alunos | Implementado e refinado | CRUD basico, validacoes, tratamento de erros e testes unitarios |
+| Planos | Proximo modulo | Ainda nao implementado |
+| Matriculas | Planejado | Depende de Alunos e Planos |
+| Pagamentos | Planejado | Depende de Matriculas |
+| Check-ins | Planejado | Depende da base de alunos e matriculas |
+
+## Fora do escopo atual
+
+- Autenticacao e autorizacao.
+- Controle de perfis de usuario.
+- Integracao com meios de pagamento.
+- Envio de e-mails ou notificacoes.
+- Relatorios avancados.
+- Dashboard administrativo.
+- Deploy em nuvem.
+- Multiacademia ou multiempresa.
+- Frontend.
+- Swagger.
+- Flyway.
+- Dockerfile de aplicacao.
+- Integracao com catraca.
+- QR Code para acesso fisico.
+- Face ID ou biometria facial.
+- Controle fisico de acesso.
+
+Integracoes com catraca, QR Code, Face ID e controle fisico de acesso sao evolucoes futuras e nao fazem parte do escopo implementado ate o momento.
 
 ## Entidades planejadas
 
@@ -38,28 +58,31 @@ O MVP deve contemplar, em ordem:
 - `Pagamento`
 - `CheckIn`
 
-Essas entidades ainda nao devem ser implementadas nesta etapa. Elas servem apenas como direcao de modelagem para as proximas fases.
+Neste momento, apenas `Aluno` foi implementada.
 
 ## Regras de negocio iniciais
 
 - Um aluno deve possuir dados minimos para identificacao e contato.
+- Email de aluno nao pode ser duplicado.
 - Um plano deve possuir nome, valor e descricao basica.
 - Uma matricula deve relacionar um aluno a um plano.
 - Um pagamento deve estar associado a uma matricula.
 - Um check-in deve estar associado a um aluno matriculado.
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
 - Regras devem ficar na camada de service, evitando logica de negocio em controllers.
+- Controllers devem receber requisicoes, delegar ao service e retornar respostas HTTP adequadas.
 
 ## Ordem de implementacao
 
-1. Finalizar setup local com PostgreSQL e Docker Compose.
-2. Criar estrutura inicial de pacotes.
-3. Implementar CRUD de alunos.
-4. Implementar CRUD de planos.
-5. Implementar matriculas.
-6. Implementar pagamentos.
-7. Implementar check-ins.
-8. Adicionar testes automatizados.
-9. Adicionar Swagger.
-10. Adicionar autenticacao JWT.
-11. Preparar deploy futuro.
+1. Setup local com PostgreSQL e Docker Compose. Concluido.
+2. Estrutura inicial de pacotes. Concluido.
+3. CRUD de alunos. Concluido.
+4. Refinamento de Alunos com validacoes, erros padronizados e testes. Concluido.
+5. CRUD de planos. Proximo passo.
+6. Matriculas.
+7. Pagamentos.
+8. Check-ins.
+9. Testes adicionais conforme crescimento do dominio.
+10. Swagger.
+11. Autenticacao JWT.
+12. Preparacao para deploy futuro.

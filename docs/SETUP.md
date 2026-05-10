@@ -68,6 +68,20 @@ No PowerShell:
 .\mvnw spring-boot:run
 ```
 
+Quando a aplicacao estiver rodando, valide o endpoint raiz:
+
+```bash
+curl http://localhost:8080/
+```
+
+Resposta esperada:
+
+```json
+{
+  "message": "Extreme Gym API is running"
+}
+```
+
 ## Erro: porta 8080 ja esta em uso
 
 Se a aplicacao falhar com a mensagem `Port 8080 was already in use`, ja existe outro processo usando a porta `8080`.
@@ -135,6 +149,8 @@ No PowerShell:
 ```powershell
 .\mvnw test
 ```
+
+Na validacao atual do projeto, a suite automatizada passou com 11 testes e 0 falhas.
 
 Antes de um commit, tambem e possivel rodar o script manual:
 

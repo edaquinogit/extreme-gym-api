@@ -10,7 +10,7 @@ O projeto foi estruturado para evoluir de forma incremental, com separacao clara
 
 ## Status atual
 
-O projeto possui os modulos de Alunos, Planos, Matriculas e Pagamentos implementados.
+O projeto possui os modulos de Alunos, Planos, Matriculas, Pagamentos e Check-ins implementados.
 
 Ja esta disponivel:
 
@@ -26,8 +26,9 @@ Ja esta disponivel:
 - CRUD de planos com validacoes, regra de nome unico e remocao logica.
 - Gerenciamento de matriculas conectando aluno e plano.
 - Gerenciamento de pagamentos confirmados vinculados a matriculas.
+- Registro de check-ins permitidos ou bloqueados, mantendo historico da tentativa.
 
-Proximo modulo planejado: Check-ins.
+Proximo modulo planejado: Validacao de Acesso.
 
 ## Stack utilizada
 
@@ -102,6 +103,21 @@ Proximo modulo planejado: Check-ins.
 - Data de pagamento e data de cadastro preenchidas automaticamente.
 - Testes unitarios para os principais cenarios de service.
 
+### Check-ins
+
+- Registro de tentativa de check-in vinculada a aluno.
+- Listagem de check-ins.
+- Busca de check-in por id.
+- Listagem de check-ins por aluno.
+- Bloqueio de entrada para aluno `BLOQUEADO`, `CANCELADO` ou `INADIMPLENTE`.
+- Validacao de matricula `ATIVA`.
+- Bloqueio de entrada quando a matricula esta vencida pela data final.
+- Validacao de pagamento `PAGO` para liberar o acesso.
+- Registro da tentativa mesmo quando o acesso e bloqueado.
+- Motivo claro para acesso permitido ou bloqueado.
+- Resposta sem expor entidades completas de aluno ou matricula.
+- Testes unitarios para os principais cenarios de service.
+
 ## Endpoints disponiveis
 
 | Metodo | Path | Objetivo |
@@ -126,6 +142,10 @@ Proximo modulo planejado: Check-ins.
 | `GET` | `/pagamentos/{id}` | Buscar pagamento por id |
 | `GET` | `/pagamentos/matricula/{matriculaId}` | Listar pagamentos por matricula |
 | `PATCH` | `/pagamentos/{id}/cancelar` | Cancelar pagamento |
+| `POST` | `/checkins` | Registrar tentativa de check-in |
+| `GET` | `/checkins` | Listar check-ins |
+| `GET` | `/checkins/{id}` | Buscar check-in por id |
+| `GET` | `/checkins/aluno/{alunoId}` | Listar check-ins por aluno |
 
 Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
@@ -218,7 +238,7 @@ Na ultima validacao, a suite passou com 42 testes e 0 falhas.
 
 Ainda nao foram implementados:
 
-- Check-ins.
+- Validacao de Acesso completa.
 - Autenticacao JWT.
 - Swagger.
 - Flyway.
@@ -231,4 +251,4 @@ Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico e implementar o modulo de Check-ins, usando a base de alunos, planos, matriculas e pagamentos ja criada.
+O proximo passo tecnico e implementar a camada de Validacao de Acesso, evoluindo a base de check-ins sem adicionar integracoes fisicas antes da hora.

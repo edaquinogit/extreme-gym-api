@@ -88,13 +88,29 @@ Status: concluida.
 
 ## Fase 6: Check-ins
 
+Status: concluida.
+
+- Entidade `CheckIn` criada.
+- DTOs de entrada e saida criados.
+- Repository, service e controller criados.
+- Registro de tentativa de check-in implementado.
+- Check-in associado ao aluno e, quando permitido, a matricula ativa.
+- Bloqueio de aluno `BLOQUEADO`, `CANCELADO` ou `INADIMPLENTE`.
+- Bloqueio quando nao existe matricula `ATIVA`.
+- Bloqueio quando a matricula esta vencida pela data final.
+- Bloqueio quando nao existe pagamento `PAGO` para a matricula.
+- Tentativas bloqueadas tambem sao registradas com motivo claro.
+- Testes unitarios do service adicionados.
+
+## Fase 7: Validacao de Acesso
+
 Status: planejada.
 
-- Criar entidade de check-in.
-- Registrar entrada de aluno.
-- Associar check-in ao aluno matriculado.
+- Evoluir as regras de liberacao de entrada a partir dos check-ins.
+- Definir contratos especificos para cenarios de acesso.
+- Manter integracoes fisicas como catraca, QR Code e Face ID fora desta fase inicial.
 
-## Fase 7: Testes adicionais
+## Fase 8: Testes adicionais
 
 Status: planejada conforme evolucao do dominio.
 
@@ -102,14 +118,14 @@ Status: planejada conforme evolucao do dominio.
 - Avaliar testes de integracao para controllers.
 - Validar cenarios principais do MVP.
 
-## Fase 8: Swagger
+## Fase 9: Swagger
 
 Status: planejada para fase futura.
 
 - Adicionar documentacao interativa da API.
 - Documentar endpoints, entradas, saidas e erros principais.
 
-## Fase 9: Autenticacao JWT
+## Fase 10: Autenticacao JWT
 
 Status: planejada para fase futura.
 
@@ -117,7 +133,7 @@ Status: planejada para fase futura.
 - Criar fluxo de autenticacao.
 - Proteger endpoints conforme necessidade.
 
-## Fase 10: Deploy futuro
+## Fase 11: Deploy futuro
 
 Status: planejada para fase futura.
 
@@ -125,3 +141,18 @@ Status: planejada para fase futura.
 - Revisar configuracoes para producao.
 - Avaliar uso de migrations com Flyway.
 - Planejar deploy em ambiente cloud.
+
+## Evolucao futura: Automacao de lembretes e retencao de alunos
+
+Status: visao futura, fora do MVP atual.
+
+- Identificar alunos com matricula ativa e varios dias sem check-in.
+- Avaliar regra de lembrete de retorno para aluno ha 7 dias sem frequentar.
+- Avaliar regra de lembrete financeiro ou relacional para aluno ha 10 dias sem frequentar e com mensalidade atrasada.
+- Iniciar a evolucao, se necessario, com simulacao ou registro interno de notificacoes.
+- Manter envio real por WhatsApp fora do MVP atual.
+- Usar WhatsApp Business Platform ou provedor autorizado somente em uma etapa futura de integracao real.
+- Respeitar opt-in do aluno, templates aprovados, custos da plataforma e cuidados com LGPD.
+- Depender do modulo de Check-ins para calcular frequencia.
+- Depender da evolucao do modulo de Pagamentos com controle de vencimentos para calcular inadimplencia.
+- Nao criar entidades, services, controllers, jobs ou integracoes de notificacao nesta fase.

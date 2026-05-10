@@ -66,6 +66,38 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 - Cancelamento altera o status do pagamento para `CANCELADO`.
 - Pagamento nao deve ser apagado fisicamente.
 
+## Check-ins
+
+- Check-in pertence a um aluno.
+- Check-in permitido deve estar associado a uma matricula.
+- Aluno deve existir para registrar check-in.
+- Aluno `BLOQUEADO` nao pode entrar.
+- Aluno `CANCELADO` nao pode entrar.
+- Aluno `INADIMPLENTE` nao pode entrar.
+- Aluno precisa possuir matricula `ATIVA`.
+- Matricula ativa nao pode estar vencida pela data final.
+- Matricula precisa possuir pagamento `PAGO`.
+- Tentativa de check-in bloqueada tambem deve ser registrada.
+- O motivo do bloqueio deve ser claro.
+- Check-in permitido deve retornar o motivo `Check-in permitido`.
+- Respostas de check-in nao devem expor entidades completas de aluno ou matricula.
+- A data e hora do check-in sao definidas automaticamente no registro.
+
+## Automacao de lembretes e retencao de alunos
+
+Regras futuras, ainda nao implementadas:
+
+- O sistema podera identificar alunos com matricula ativa e varios dias sem check-in.
+- Aluno ha 7 dias sem frequentar podera receber lembrete de retorno.
+- Aluno ha 10 dias sem frequentar e com mensalidade atrasada podera receber lembrete financeiro ou relacional.
+- A primeira implementacao podera ser apenas simulacao ou registro interno de notificacoes.
+- Envio real por WhatsApp fica fora do MVP atual.
+- Integracao real devera usar WhatsApp Business Platform ou provedor autorizado.
+- Mensagens automaticas deverao respeitar opt-in do aluno, templates aprovados e LGPD.
+- A regra de frequencia dependera dos registros do modulo de Check-ins.
+- A regra de inadimplencia dependera da evolucao do modulo de Pagamentos com vencimentos.
+- Esta evolucao nao cria, no momento, entidades de notificacao, services, controllers, jobs ou integracoes externas.
+
 ## Organizacao das regras
 
 - Validacoes de formato e obrigatoriedade ficam nos DTOs de entrada.
@@ -77,7 +109,7 @@ Regras de negocio atualmente documentadas para a Extreme Gym API.
 
 Ainda nao existem regras implementadas para:
 
-- Check-ins.
 - Validacao de Acesso.
 - Autenticacao.
 - Controle fisico de acesso.
+- Envio real de mensagens por WhatsApp.

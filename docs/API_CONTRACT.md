@@ -660,3 +660,145 @@ Possiveis status HTTP:
 
 - `200 OK`: pagamento cancelado.
 - `404 Not Found`: pagamento nao encontrado.
+
+## POST /checkins
+
+Objetivo: registrar uma tentativa de check-in, indicando se a entrada foi permitida ou bloqueada.
+
+Metodo HTTP: `POST`
+
+Path: `/checkins`
+
+Request:
+
+```json
+{
+  "alunoId": 1
+}
+```
+
+Response `201 Created` para acesso permitido:
+
+```json
+{
+  "id": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "matriculaId": 1,
+  "permitido": true,
+  "motivo": "Check-in permitido",
+  "dataHora": "2026-05-09T23:45:10.12345"
+}
+```
+
+Response `201 Created` para acesso bloqueado:
+
+```json
+{
+  "id": 2,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "matriculaId": null,
+  "permitido": false,
+  "motivo": "Aluno nao possui matricula ativa",
+  "dataHora": "2026-05-09T23:50:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `201 Created`: tentativa de check-in registrada.
+- `400 Bad Request`: dados invalidos.
+- `404 Not Found`: aluno nao encontrado.
+
+## GET /checkins
+
+Objetivo: listar check-ins registrados.
+
+Metodo HTTP: `GET`
+
+Path: `/checkins`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "matriculaId": 1,
+    "permitido": true,
+    "motivo": "Check-in permitido",
+    "dataHora": "2026-05-09T23:45:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.
+
+## GET /checkins/{id}
+
+Objetivo: buscar um check-in pelo identificador.
+
+Metodo HTTP: `GET`
+
+Path: `/checkins/{id}`
+
+Response `200 OK`:
+
+```json
+{
+  "id": 1,
+  "alunoId": 1,
+  "alunoNome": "Ana Silva",
+  "matriculaId": 1,
+  "permitido": true,
+  "motivo": "Check-in permitido",
+  "dataHora": "2026-05-09T23:45:10.12345"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: check-in encontrado.
+- `404 Not Found`: check-in nao encontrado.
+
+## GET /checkins/aluno/{alunoId}
+
+Objetivo: listar check-ins registrados para um aluno.
+
+Metodo HTTP: `GET`
+
+Path: `/checkins/aluno/{alunoId}`
+
+Response `200 OK`:
+
+```json
+[
+  {
+    "id": 1,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "matriculaId": 1,
+    "permitido": true,
+    "motivo": "Check-in permitido",
+    "dataHora": "2026-05-09T23:45:10.12345"
+  },
+  {
+    "id": 2,
+    "alunoId": 1,
+    "alunoNome": "Ana Silva",
+    "matriculaId": null,
+    "permitido": false,
+    "motivo": "Aluno inadimplente",
+    "dataHora": "2026-05-09T23:50:10.12345"
+  }
+]
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: lista retornada. Pode retornar lista vazia.

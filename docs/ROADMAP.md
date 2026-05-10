@@ -85,6 +85,7 @@ Status: concluida.
 - Bloqueio de pagamento `PAGO` duplicado para a mesma matricula.
 - Cancelamento por alteracao de status para `CANCELADO`.
 - Testes unitarios do service adicionados.
+- Testes de integracao/controller adicionados para os principais contratos HTTP.
 
 ## Fase 6: Check-ins
 
@@ -114,6 +115,7 @@ Status: concluida.
 - Exigencia de matricula `ATIVA`, nao vencida e com pagamento `PAGO`.
 - Resposta com motivo claro para acesso liberado ou bloqueado.
 - Testes unitarios do service adicionados.
+- Testes de integracao/controller adicionados para os principais contratos HTTP.
 - Integracoes fisicas como catraca, QR Code e Face ID mantidas fora desta fase inicial.
 
 ## Fase 8: Testes adicionais e qualidade

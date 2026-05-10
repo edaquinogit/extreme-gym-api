@@ -68,6 +68,60 @@ No PowerShell:
 .\mvnw spring-boot:run
 ```
 
+## Erro: porta 8080 ja esta em uso
+
+Se a aplicacao falhar com a mensagem `Port 8080 was already in use`, ja existe outro processo usando a porta `8080`.
+
+No WSL, identifique o processo:
+
+```bash
+lsof -i :8080
+```
+
+O comando mostra uma linha com o processo e o PID real. Exemplo:
+
+```bash
+COMMAND  PID  USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+java    3418 ednal   78u  IPv6  48343      0t0  TCP *:http-alt (LISTEN)
+```
+
+Nesse exemplo, o PID real e `3418`.
+
+Quando uma instrucao mostrar `PID_REAL` ou `NUMERO_DO_PID`, isso e apenas um placeholder. Substitua pelo numero real exibido no seu terminal.
+
+Para encerrar o processo:
+
+```bash
+kill -9 PID_REAL
+```
+
+Usando o exemplo acima:
+
+```bash
+kill -9 3418
+```
+
+Confirme que a porta ficou livre:
+
+```bash
+lsof -i :8080
+```
+
+Se o comando nao retornar nenhum processo, rode a aplicacao novamente:
+
+```bash
+./mvnw spring-boot:run
+```
+
+A aplicacao deve subir exibindo mensagens como `Tomcat started on port 8080` e `Started ExtremeGymApiApplication`.
+
+Se a porta continuar ocupada, repita o processo:
+
+```bash
+lsof -i :8080
+kill -9 PID_REAL
+```
+
 ## Rodar os testes
 
 No WSL:

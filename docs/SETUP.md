@@ -153,6 +153,15 @@ Com a aplicacao rodando em `localhost:8080`, a documentacao interativa da API fi
 
 O Swagger permite visualizar e testar endpoints da API pelo navegador. Ele nao substitui autenticacao, deploy ou configuracoes de producao.
 
+## Integracao local com frontend
+
+Durante o desenvolvimento local, a API aceita requisicoes CORS apenas do frontend Vite nas origens:
+
+- `http://localhost:5173`
+- `http://localhost:5174`
+
+Essas origens cobrem a porta padrao do Vite e a porta alternativa usada quando `5173` ja esta ocupada. Credenciais CORS permanecem desabilitadas nesta fase, pois ainda nao ha autenticacao por cookie.
+
 ## Erro: porta 8080 ja esta em uso
 
 Se a aplicacao falhar com a mensagem `Port 8080 was already in use`, ja existe outro processo usando a porta `8080`.
@@ -221,7 +230,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na validacao atual do projeto, a suite automatizada passou com 118 testes, 0 falhas, 0 erros e 0 testes ignorados.
+Na validacao atual do projeto, a suite automatizada passou com 120 testes, 0 falhas, 0 erros e 0 testes ignorados.
 
 Antes de um commit, tambem e possivel rodar o script manual:
 

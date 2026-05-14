@@ -1,6 +1,8 @@
 package com.extreme.gym.controller;
 
+import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.repository.AlunoRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -28,6 +31,9 @@ class AlunoControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private AlunoRepository alunoRepository;
@@ -49,7 +55,9 @@ class AlunoControllerIntegrationTest {
                 .andExpect(jsonPath("$.email").value("ana.silva@email.com"))
                 .andExpect(jsonPath("$.telefone").value("11999999999"))
                 .andExpect(jsonPath("$.status").value("ATIVO"))
-                .andExpect(jsonPath("$.dataCadastro").exists());
+                .andExpect(jsonPath("$.dataCadastro").exists())
+                .andExpect(jsonPath("$.hibernateLazyInitializer").doesNotExist())
+                .andExpect(jsonPath("$.handler").doesNotExist());
     }
 
     @Test
@@ -79,6 +87,28 @@ class AlunoControllerIntegrationTest {
     }
 
     @Test
+    void deveRetornarErroQuandoAlunoNaoExistirNaBuscaPorId() throws Exception {
+        mockMvc.perform(get("/alunos/{id}", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.path").value("/alunos/999"));
+    }
+
+    @Test
+    void deveRetornarErroDeValidacaoQuandoNomeForVazio() throws Exception {
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(alunoJson("", "ana.silva@email.com", "11999999999")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Dados invalidos"))
+                .andExpect(jsonPath("$.path").value("/alunos"))
+                .andExpect(jsonPath("$.errors.nome").value("Nome e obrigatorio"));
+    }
+
+    @Test
     void deveRetornarErroDeValidacaoQuandoEmailForInvalido() throws Exception {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,6 +119,19 @@ class AlunoControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Dados invalidos"))
                 .andExpect(jsonPath("$.path").value("/alunos"))
                 .andExpect(jsonPath("$.errors.email").value("Email deve ser valido"));
+    }
+
+    @Test
+    void deveRetornarErroDeValidacaoQuandoTelefoneForVazio() throws Exception {
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(alunoJson("Ana Silva", "ana.silva@email.com", "")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Dados invalidos"))
+                .andExpect(jsonPath("$.path").value("/alunos"))
+                .andExpect(jsonPath("$.errors.telefone").value("Telefone e obrigatorio"));
     }
 
     @Test
@@ -133,6 +176,21 @@ class AlunoControllerIntegrationTest {
     }
 
     @Test
+    void deveAtualizarAlunoExistenteComNovoEmail() throws Exception {
+        Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+
+        mockMvc.perform(put("/alunos/{id}", alunoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(alunoJson("Ana Silva Atualizada", "ana.atualizada@email.com", "11777777777")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alunoId))
+                .andExpect(jsonPath("$.nome").value("Ana Silva Atualizada"))
+                .andExpect(jsonPath("$.email").value("ana.atualizada@email.com"))
+                .andExpect(jsonPath("$.telefone").value("11777777777"))
+                .andExpect(jsonPath("$.status").value("ATIVO"));
+    }
+
+    @Test
     void deveBloquearAtualizacaoComEmailUsadoPorOutroAluno() throws Exception {
         Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
         criarAluno("Bruno Souza", "bruno.souza@email.com", "11888888888");
@@ -147,6 +205,21 @@ class AlunoControllerIntegrationTest {
                 .andExpect(jsonPath("$.path").value("/alunos/" + alunoId));
     }
 
+    @Test
+    void deveRemoverAlunoFisicamenteConformeComportamentoAtual() throws Exception {
+        Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+
+        // A auditoria recomenda remocao logica como evolucao futura, mas esta tarefa valida a regra atual.
+        mockMvc.perform(delete("/alunos/{id}", alunoId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/alunos/{id}", alunoId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.path").value("/alunos/" + alunoId));
+    }
+
     private Long criarAluno(String nome, String email, String telefone) throws Exception {
         MvcResult result = mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,13 +231,7 @@ class AlunoControllerIntegrationTest {
         return id.longValue();
     }
 
-    private String alunoJson(String nome, String email, String telefone) {
-        return """
-                {
-                  "nome": "%s",
-                  "email": "%s",
-                  "telefone": "%s"
-                }
-                """.formatted(nome, email, telefone);
+    private String alunoJson(String nome, String email, String telefone) throws Exception {
+        return objectMapper.writeValueAsString(new AlunoRequestDTO(nome, email, telefone));
     }
 }

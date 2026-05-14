@@ -6,8 +6,10 @@ Status: concluida.
 
 - Maven Wrapper funcionando.
 - PostgreSQL configurado com Docker Compose.
-- `application.properties` configurado para ambiente local.
+- Profiles `dev`, `test` e `prod` separados em arquivos de configuracao.
+- `application.properties` mantendo apenas configuracoes comuns e profile local padrao.
 - Profile de teste com H2.
+- Profile de producao preparado para variaveis de ambiente, `ddl-auto=validate` e Swagger desabilitado.
 - Documentacao inicial de setup e escopo.
 
 ## Fase 2: CRUD de alunos
@@ -126,7 +128,7 @@ Status: concluida para o escopo atual do MVP.
 - Testes unitarios adicionados para services dos modulos principais.
 - Testes de integracao/controller com MockMvc adicionados para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
 - Cenarios principais do MVP validados pela suite automatizada.
-- Ultima validacao conhecida: 118 testes executados, 0 falhas, 0 erros e 0 ignorados.
+- Ultima validacao conhecida: 125 testes executados, 0 falhas, 0 erros e 0 ignorados.
 - Novos testes devem acompanhar futuras regras de negocio, autenticacao, deploy ou integracoes.
 
 ## Fase 9: Swagger
@@ -134,8 +136,9 @@ Status: concluida para o escopo atual do MVP.
 Status: concluida.
 
 - Documentacao interativa da API adicionada com springdoc-openapi.
-- Swagger UI disponivel para visualizar e testar endpoints.
-- OpenAPI JSON disponivel para ferramentas e integracoes.
+- Swagger UI disponivel para visualizar e testar endpoints no profile `dev`.
+- OpenAPI JSON disponivel para ferramentas e integracoes no profile `dev`.
+- Swagger UI e OpenAPI JSON desabilitados no profile `prod`.
 - Anotacoes detalhadas por endpoint mantidas para uma evolucao futura, se houver necessidade.
 
 ## Fase 10: Autenticacao JWT

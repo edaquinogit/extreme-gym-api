@@ -16,6 +16,7 @@ Ja esta disponivel:
 
 - Aplicacao Spring Boot rodando em `localhost:8080`.
 - PostgreSQL local via Docker Compose.
+- Profiles separados para `dev`, `test` e `prod`.
 - Profile de teste com H2.
 - CRUD basico de alunos.
 - Validacoes de entrada com Bean Validation.
@@ -32,7 +33,7 @@ Ja esta disponivel:
 - Dockerfile para empacotar e executar a aplicacao via container.
 - Testes unitarios de services e testes de integracao/controller com MockMvc.
 
-Ultima validacao conhecida: `118` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
+Ultima validacao conhecida: `125` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
 
 ## Fluxo completo do MVP
 
@@ -93,6 +94,7 @@ O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco e
 - Ambiente de desenvolvimento usando PostgreSQL via Docker Compose.
 - Empacotamento da aplicacao com Dockerfile multi-stage e Java 21.
 - Swagger/OpenAPI disponivel como documentacao interativa para consulta e teste dos endpoints.
+- Swagger/OpenAPI habilitado no profile `dev` e desabilitado no profile `prod`.
 
 Os detalhes de arquitetura, contrato da API, setup local e regras de negocio ficam concentrados na pasta [`docs`](docs), mantendo este README como visao geral do projeto.
 
@@ -218,13 +220,34 @@ Contrato detalhado: [docs/API_CONTRACT.md](docs/API_CONTRACT.md)
 
 A API expoe documentacao automatica com Swagger/OpenAPI usando springdoc-openapi.
 
-Com a aplicacao rodando em `localhost:8080`, acesse:
+Com a aplicacao rodando em `localhost:8080` no profile `dev`, acesse:
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - Swagger UI alternativo: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
 O Swagger permite visualizar e testar os endpoints da API pelo navegador. Ele e apenas documentacao interativa da API; nao adiciona autenticacao, autorizacao ou deploy.
+
+No profile `prod`, Swagger UI e OpenAPI JSON ficam desabilitados por configuracao.
+
+## Profiles de ambiente
+
+O projeto usa tres profiles principais:
+
+- `dev`: profile padrao local, usa PostgreSQL via Docker Compose, `ddl-auto=update` e Swagger habilitado.
+- `test`: usado pela suite automatizada, usa H2 em memoria e nao exige PostgreSQL real.
+- `prod`: usa variaveis de ambiente para banco, `ddl-auto=validate`, SQL detalhado desligado e Swagger desabilitado.
+
+Para producao, configure obrigatoriamente:
+
+```bash
+DATABASE_URL=jdbc:postgresql://host:5432/database
+DATABASE_USERNAME=usuario
+DATABASE_PASSWORD=senha
+SPRING_PROFILES_ACTIVE=prod
+```
+
+Autenticacao/JWT, catraca, QR Code, Face ID e Flyway permanecem como evolucoes futuras e nao fazem parte desta etapa.
 
 ## Como rodar localmente
 
@@ -272,6 +295,8 @@ No PowerShell:
 
 Quando aparecer `Tomcat started on port 8080`, a aplicacao esta escutando requisicoes HTTP em `localhost:8080`.
 
+Por padrao local, a aplicacao sobe com o profile `dev`.
+
 Para validar rapidamente:
 
 ```bash
@@ -302,7 +327,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 118 testes e 0 falhas.
+Na ultima validacao, a suite passou com 125 testes e 0 falhas.
 
 ## Documentacao adicional
 

@@ -79,10 +79,12 @@ Essa camada deve ser usada apenas quando houver configuracoes reais a centraliza
 - Spring Data JPA para persistencia.
 - Bean Validation para validacao de entradas.
 - Lombok para reduzir codigo repetitivo.
-- `spring.jpa.hibernate.ddl-auto=update` apenas para desenvolvimento local inicial.
+- Profiles separados para `dev`, `test` e `prod`.
+- `spring.jpa.hibernate.ddl-auto=update` apenas no profile `dev`.
+- `spring.jpa.hibernate.ddl-auto=validate` no profile `prod`.
 - Testes unitarios cobrem os services dos modulos implementados no MVP.
 - O profile de teste usa H2, mantendo PostgreSQL para execucao local via Docker.
-- A API expoe documentacao automatica via springdoc-openapi, com Swagger UI e OpenAPI JSON.
+- A API expoe documentacao automatica via springdoc-openapi, com Swagger UI e OpenAPI JSON habilitados em `dev` e desabilitados em `prod`.
 - Flyway, testes de integracao, Testcontainers e autenticacao serao avaliados em fases futuras.
 
 ## Fluxo do MVP

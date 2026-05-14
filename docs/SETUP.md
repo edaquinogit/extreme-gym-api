@@ -8,6 +8,22 @@
 
 O projeto nao exige Maven instalado globalmente, pois usa `mvnw` e `mvnw.cmd`.
 
+## Profiles de ambiente
+
+O projeto usa profiles Spring para separar desenvolvimento, testes e producao:
+
+- `dev`: profile padrao para execucao local. Usa PostgreSQL via Docker Compose, credenciais locais do Compose, `ddl-auto=update` e Swagger habilitado.
+- `test`: usado pela suite automatizada. Usa H2 em memoria, recria o schema durante os testes e nao depende de PostgreSQL local.
+- `prod`: usado para producao. Exige variaveis de ambiente para o banco, usa `ddl-auto=validate`, desliga SQL detalhado e desabilita Swagger/OpenAPI.
+
+As configuracoes comuns ficam em `src/main/resources/application.properties`. As configuracoes especificas ficam em:
+
+- `src/main/resources/application-dev.properties`
+- `src/main/resources/application-prod.properties`
+- `src/test/resources/application-test.properties`
+
+Autenticacao/JWT ainda sera uma etapa futura. Integracoes com catraca, QR Code e Face ID tambem permanecem fora desta fase.
+
 ## Verificar Java
 
 No WSL ou PowerShell:
@@ -115,6 +131,12 @@ Resposta esperada:
 }
 ```
 
+O profile local padrao e `dev`. Se quiser informar explicitamente:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
 ## Rodar apenas a imagem da aplicacao com Docker
 
 O projeto possui um `Dockerfile` multi-stage que gera o jar com Maven Wrapper e executa a aplicacao com Java 21. Para o ambiente completo, prefira `docker compose up -d --build`.
@@ -129,6 +151,7 @@ Para executar apenas o container da API, mantenha um PostgreSQL acessivel e info
 
 ```bash
 docker run --rm -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=dev \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/extreme_db \
   -e SPRING_DATASOURCE_USERNAME=extreme_user \
   -e SPRING_DATASOURCE_PASSWORD=extreme_pass \
@@ -145,13 +168,28 @@ curl http://localhost:8080/
 
 ## Acessar Swagger
 
-Com a aplicacao rodando em `localhost:8080`, a documentacao interativa da API fica disponivel em:
+Com a aplicacao rodando em `localhost:8080` no profile `dev`, a documentacao interativa da API fica disponivel em:
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - Swagger UI alternativo: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
 O Swagger permite visualizar e testar endpoints da API pelo navegador. Ele nao substitui autenticacao, deploy ou configuracoes de producao.
+
+No profile `prod`, Swagger UI e OpenAPI JSON ficam desabilitados.
+
+## Configuracao de producao
+
+Para subir a aplicacao em producao, use o profile `prod` e informe os dados do banco por variaveis de ambiente:
+
+```bash
+SPRING_PROFILES_ACTIVE=prod
+DATABASE_URL=jdbc:postgresql://host:5432/database
+DATABASE_USERNAME=usuario
+DATABASE_PASSWORD=senha
+```
+
+O profile `prod` nao possui URL, usuario ou senha fixos no repositorio. Ele tambem usa `spring.jpa.hibernate.ddl-auto=validate`, mantem `spring.jpa.show-sql=false` e desabilita Swagger/OpenAPI.
 
 ## Integracao local com frontend
 
@@ -230,7 +268,9 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na validacao atual do projeto, a suite automatizada passou com 120 testes, 0 falhas, 0 erros e 0 testes ignorados.
+Na validacao atual do projeto, a suite automatizada passou com 125 testes, 0 falhas, 0 erros e 0 testes ignorados.
+
+Os testes usam o profile `test` com H2 em memoria. Portanto, `./mvnw test` nao exige PostgreSQL nem Docker rodando.
 
 Antes de um commit, tambem e possivel rodar o script manual:
 

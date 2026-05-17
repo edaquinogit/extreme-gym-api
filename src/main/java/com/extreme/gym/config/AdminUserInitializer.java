@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile("dev")
+@Profile("dev | local")
 public class AdminUserInitializer implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;

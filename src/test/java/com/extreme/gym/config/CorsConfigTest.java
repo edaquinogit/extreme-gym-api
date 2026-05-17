@@ -32,4 +32,18 @@ class CorsConfigTest {
                         "GET,POST,PUT,PATCH,DELETE,OPTIONS"
                 ));
     }
+
+    @Test
+    void devePermitirPreflightDoFrontendLocalNaPortaAtualDoViteParaLogin() throws Exception {
+        mockMvc.perform(options("/auth/login")
+                        .header(HttpHeaders.ORIGIN, "http://127.0.0.1:5177")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Content-Type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://127.0.0.1:5177"))
+                .andExpect(header().string(
+                        HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,
+                        "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+                ));
+    }
 }

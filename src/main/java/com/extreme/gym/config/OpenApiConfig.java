@@ -22,7 +22,13 @@ public class OpenApiConfig {
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .info(new Info()
                         .title("Extreme Gym API")
-                        .description("API REST para gestão de academia, controle de alunos, planos, matrículas, pagamentos, check-ins e validação de acesso.")
+                        .description("""
+                                API REST para gestão de academia, controle de alunos, planos, \
+                                matrículas, pagamentos, check-ins e validação de acesso.
+
+                                Autenticação: use `POST /auth/login` com credenciais válidas. \
+                                O contrato e exemplos de payload estão descritos nesta documentação.
+                                """)
                         .version("1.0.0"));
     }
 }

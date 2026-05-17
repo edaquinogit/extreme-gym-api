@@ -63,6 +63,12 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    void naoDeveExporContratoDeLoginViaGet() throws Exception {
+        mockMvc.perform(get("/auth/login"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
     void deveRejeitarLoginComSenhaInvalida() throws Exception {
         criarUsuario("Admin", "admin@email.com", "123456", Role.ADMIN);
 

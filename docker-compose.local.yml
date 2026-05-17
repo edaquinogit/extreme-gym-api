@@ -1,0 +1,21 @@
+# API isolada com H2 (perfil local) — ideal para desenvolvimento do frontend.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: extreme-gym-api-local
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8080/ >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 45s

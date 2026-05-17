@@ -197,8 +197,10 @@ Durante o desenvolvimento local, a API aceita requisicoes CORS apenas do fronten
 
 - `http://localhost:5173`
 - `http://localhost:5174`
+- `http://localhost:5175`
+- `http://localhost:5176`
 
-Essas origens cobrem a porta padrao do Vite e a porta alternativa usada quando `5173` ja esta ocupada. Credenciais CORS permanecem desabilitadas nesta fase, pois ainda nao ha autenticacao por cookie.
+Essas origens cobrem a porta padrao do Vite e portas alternativas usadas quando as anteriores ja estao ocupadas. Credenciais CORS permanecem desabilitadas nesta fase, pois ainda nao ha autenticacao por cookie.
 
 ## Erro: porta 8080 ja esta em uso
 

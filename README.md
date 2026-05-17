@@ -15,8 +15,9 @@ O projeto possui os modulos de Alunos, Planos, Matriculas, Pagamentos, Check-ins
 Ja esta disponivel:
 
 - Aplicacao Spring Boot rodando em `localhost:8080`.
+- Profile `local` com H2 em memoria para subir a API sem depender de Docker/PostgreSQL.
 - PostgreSQL local via Docker Compose.
-- Profiles separados para `dev`, `test` e `prod`.
+- Profiles separados para `local`, `dev`, `test` e `prod`.
 - Profile de teste com H2.
 - CRUD basico de alunos.
 - Validacoes de entrada com Bean Validation.
@@ -74,6 +75,7 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - Spring Web
 - Spring Data JPA
 - PostgreSQL via Docker
+- H2 para desenvolvimento local rapido
 - Docker
 - H2 para testes
 - Bean Validation
@@ -91,7 +93,8 @@ O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco e
 - Testes de integracao/controller com MockMvc para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
 - Suite automatizada validada com `118` testes passando: `0` falhas, `0` erros e `0` ignorados.
 - Profile de teste com H2, mantendo os testes independentes do PostgreSQL local.
-- Ambiente de desenvolvimento usando PostgreSQL via Docker Compose.
+- Ambiente local padrao usando H2 em memoria para facilitar o primeiro login.
+- Ambiente de desenvolvimento com PostgreSQL usando Docker Compose no profile `dev`.
 - Empacotamento da aplicacao com Dockerfile multi-stage e Java 21.
 - Swagger/OpenAPI disponivel como documentacao interativa para consulta e teste dos endpoints.
 - Swagger/OpenAPI habilitado no profile `dev` e desabilitado no profile `prod`.
@@ -189,6 +192,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 | Metodo | Path | Objetivo |
 | --- | --- | --- |
 | `GET` | `/` | Verificar se a API esta rodando |
+| `POST` | `/auth/login` | Autenticar usuario e retornar JWT (contrato documentado no Swagger em dev/local) |
 | `POST` | `/alunos` | Cadastrar aluno |
 | `GET` | `/alunos` | Listar alunos |
 | `GET` | `/alunos/{id}` | Buscar aluno por id |
@@ -247,7 +251,47 @@ DATABASE_PASSWORD=senha
 SPRING_PROFILES_ACTIVE=prod
 ```
 
-Autenticacao/JWT, catraca, QR Code, Face ID e Flyway permanecem como evolucoes futuras e nao fazem parte desta etapa.
+## JWT Security Configuration
+
+A aplicacao implementa autenticacao JWT com validacao robusta de seguranca no startup. 
+
+**Importante:** Secrets nao possuem fallbacks inseguros. A aplicacao falha rapidamente se variaveis requeridas nao estiverem configuradas (fail-fast).
+
+### Por Profile
+
+- **dev** e **local**: Possuem secrets gerados para desenvolvimento local com defaults seguros
+- **prod**: REQUERIDO configurar variaveis de ambiente (nao ha defaults)
+
+### Configuracao Minima por Ambiente
+
+**Development (profile: `dev`)**
+```bash
+# Defaults estao em application-dev.properties
+# Nenhuma variavel requerida para subir localmente
+./mvnw spring-boot:run
+```
+
+**Production (profile: `prod`)**
+```bash
+# TODAS as variaveis sao OBRIGATORIAS
+export JWT_SECRET="$(openssl rand -base64 32)"
+export ADMIN_EMAIL="admin@empresa.com"
+export ADMIN_USERNAME="admin_prod"
+export ADMIN_PASSWORD="P@ssw0rd!Complexo123"
+export DATABASE_URL="jdbc:postgresql://host:5432/db"
+export DATABASE_USERNAME="db_user"
+export DATABASE_PASSWORD="db_pass"
+export SPRING_PROFILES_ACTIVE=prod
+
+java -jar extreme-gym-api.jar
+```
+
+Para documentacao completa sobre JWT, veja:
+- [docs/JWT_SECURITY_CONFIGURATION.md](docs/JWT_SECURITY_CONFIGURATION.md) - Guia detalhado
+- [docs/JWT_QUICK_REFERENCE.md](docs/JWT_QUICK_REFERENCE.md) - Quick reference para desenvolvedores
+- [SECURITY_STATUS.md](SECURITY_STATUS.md) - Status de implementacao de seguranca
+
+Catraca, QR Code, Face ID e Flyway permanecem como evolucoes futuras e nao fazem parte desta etapa.
 
 ## Como rodar localmente
 

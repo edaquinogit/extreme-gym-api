@@ -1,6 +1,8 @@
 package com.extreme.gym.config;
 
 import java.util.Arrays;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -12,22 +14,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    private static final String[] ALLOWED_ORIGINS = {
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:5175",
-            "http://localhost:5176",
-            "http://localhost:5177",
-            "http://localhost:5178",
-            "http://localhost:5179",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-            "http://127.0.0.1:5175",
-            "http://127.0.0.1:5176",
-            "http://127.0.0.1:5177",
-            "http://127.0.0.1:5178",
-            "http://127.0.0.1:5179"
-    };
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     private static final String[] ALLOWED_METHODS = {
             "GET",
@@ -46,7 +34,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(ALLOWED_ORIGINS)
+                .allowedOrigins(allowedOrigins.toArray(new String[0]))
                 .allowedMethods(ALLOWED_METHODS)
                 .allowedHeaders(ALLOWED_HEADERS)
                 .allowCredentials(false);
@@ -55,7 +43,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(ALLOWED_ORIGINS));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList(ALLOWED_METHODS));
         configuration.setAllowedHeaders(Arrays.asList(ALLOWED_HEADERS));
         configuration.setAllowCredentials(false);

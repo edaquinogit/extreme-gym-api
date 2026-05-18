@@ -26,7 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    @Value("${app.auth.registration-enabled:true}")
+    @Value("${app.auth.registration-enabled:false}")
     private boolean registrationEnabled;
 
     public LoginResponse register(RegisterRequest request) {
@@ -42,7 +42,7 @@ public class AuthService {
                 .email(request.email())
                 .username(request.email())
                 .passwordHash(passwordEncoder.encode(request.senha()))
-                .role(request.role() != null ? request.role() : Role.RECEPCAO)
+                .role(Role.RECEPCAO)
                 .ativo(true)
                 .build();
 

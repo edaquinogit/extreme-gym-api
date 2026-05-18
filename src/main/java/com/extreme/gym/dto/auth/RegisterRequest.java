@@ -1,6 +1,5 @@
 package com.extreme.gym.dto.auth;
 
-import com.extreme.gym.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,8 +15,6 @@ public record RegisterRequest(
 
         @NotBlank(message = "Senha e obrigatoria")
         @Size(min = 6, max = 120, message = "Senha deve ter entre 6 e 120 caracteres")
-        String senha,
-
-        Role role
+        String senha
 ) {
 }

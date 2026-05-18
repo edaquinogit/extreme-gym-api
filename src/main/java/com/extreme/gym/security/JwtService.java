@@ -75,6 +75,7 @@ public class JwtService {
             }
 
             return Optional.of(new JwtUser(
+                    ((Number) payload.get("uid")).longValue(),
                     (String) payload.get("sub"),
                     Role.valueOf((String) payload.get("role"))
             ));
@@ -124,6 +125,6 @@ public class JwtService {
         );
     }
 
-    public record JwtUser(String email, Role role) {
+    public record JwtUser(Long userId, String email, Role role) {
     }
 }

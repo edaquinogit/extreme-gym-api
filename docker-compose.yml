@@ -27,9 +27,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/extreme_db
       SPRING_DATASOURCE_USERNAME: extreme_user
       SPRING_DATASOURCE_PASSWORD: extreme_pass
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     networks:

@@ -26,23 +26,26 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    @Value("${app.auth.registration-enabled:true}")
+    @Value("${app.auth.registration-enabled:false}")
     private boolean registrationEnabled;
 
     public LoginResponse register(RegisterRequest request) {
         if (!registrationEnabled) {
             throw new BusinessException("Registro publico de usuarios esta desabilitado");
         }
-        if (usuarioRepository.existsByEmail(request.email())) {
+
+        String emailNormalizado = request.email().toLowerCase().trim();
+
+        if (usuarioRepository.existsByEmail(emailNormalizado)) {
             throw new BusinessException("Usuario ja cadastrado com este email");
         }
 
         Usuario usuario = Usuario.builder()
                 .nome(request.nome())
-                .email(request.email())
-                .username(request.email())
+                .email(emailNormalizado)
+                .username(emailNormalizado)
                 .passwordHash(passwordEncoder.encode(request.senha()))
-                .role(request.role() != null ? request.role() : Role.RECEPCAO)
+                .role(Role.RECEPCAO)
                 .ativo(true)
                 .build();
 
@@ -52,7 +55,9 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmailOrUsername(request.login())
+        String loginNormalizado = request.login().toLowerCase().trim();
+        
+        Usuario usuario = usuarioRepository.findByEmailOrUsername(loginNormalizado)
                 .filter(Usuario::getAtivo)
                 .orElseThrow(() -> new BadCredentialsException("Credenciais invalidas"));
 

@@ -22,7 +22,7 @@ As configuracoes comuns ficam em `src/main/resources/application.properties`. As
 - `src/main/resources/application-prod.properties`
 - `src/test/resources/application-test.properties`
 
-Autenticacao/JWT ainda sera uma etapa futura. Integracoes com catraca, QR Code e Face ID tambem permanecem fora desta fase.
+Autenticacao/JWT ja existe nesta API. Em `dev` e `prod`, nao use `app.security.enabled=false`; esse escape e aceito apenas no profile `test` para a suite automatizada. O registro publico (`/auth/register`) fica desabilitado por padrao e, quando habilitado, cria apenas usuarios `RECEPCAO`. Integracoes com catraca, QR Code e Face ID permanecem fora desta fase.
 
 ## Verificar Java
 
@@ -52,6 +52,14 @@ echo $env:JAVA_HOME
 
 Entre na raiz real do projeto, onde estao `pom.xml` e `docker-compose.yml`.
 
+Crie um `.env` local a partir do exemplo antes de subir os containers:
+
+```bash
+cp .env.example .env
+```
+
+Os valores de `.env.example` sao apenas para desenvolvimento local. Para producao, defina secrets reais no ambiente de deploy e mantenha `AUTH_REGISTRATION_ENABLED=false`.
+
 No WSL:
 
 ```bash
@@ -77,18 +85,25 @@ O Docker Compose cria:
 - Rede interna para comunicacao entre aplicacao e banco.
 - Volume nomeado `extreme_data` para persistencia do PostgreSQL.
 
+A aplicacao usa explicitamente o profile definido em `SPRING_PROFILES_ACTIVE` no `.env` local. Para o compose de desenvolvimento, o valor esperado e `dev`, evitando queda acidental no profile `local`.
+
 A aplicacao acessa o banco pelo host interno `postgres`, usando:
 
 ```text
 jdbc:postgresql://postgres:5432/extreme_db
 ```
 
-As credenciais configuradas no Compose sao apenas para desenvolvimento local:
+As credenciais devem vir do `.env` local. Os exemplos abaixo nao sao valores de producao:
 
 ```text
 POSTGRES_DB=extreme_db
 POSTGRES_USER=extreme_user
-POSTGRES_PASSWORD=extreme_pass
+POSTGRES_PASSWORD=extreme_pass_local_only
+JWT_SECRET=dev-compose-MzA3...
+AUTH_REGISTRATION_ENABLED=false
+ADMIN_EMAIL=admin@extremegym.local
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin@123DevLocalOnly!
 ```
 
 Para acompanhar os logs da aplicacao:

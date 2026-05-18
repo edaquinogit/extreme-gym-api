@@ -249,6 +249,11 @@ DATABASE_URL=jdbc:postgresql://host:5432/database
 DATABASE_USERNAME=usuario
 DATABASE_PASSWORD=senha
 SPRING_PROFILES_ACTIVE=prod
+JWT_SECRET="$(openssl rand -base64 32)"
+AUTH_REGISTRATION_ENABLED=false
+ADMIN_EMAIL=admin@empresa.com
+ADMIN_USERNAME=admin_prod
+ADMIN_PASSWORD="senha-forte-e-unica"
 ```
 
 ## JWT Security Configuration
@@ -314,6 +319,8 @@ cd C:\Users\ednal\Documents\Projetos\extreme-gym-api\extreme-gym-api
 ```bash
 docker compose up -d --build
 ```
+
+Antes do primeiro `docker compose up`, copie `.env.example` para `.env` e ajuste os valores locais. O compose usa `SPRING_PROFILES_ACTIVE=dev`, exige `JWT_SECRET` via ambiente e mantem `AUTH_REGISTRATION_ENABLED=false` por padrao.
 
 Verificar se os containers estao rodando:
 

@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,7 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
-@SpringBootTest(properties = "app.security.enabled=true")
+@SpringBootTest(properties = {
+        "app.security.enabled=true",
+        "app.auth.registration-enabled=true"
+})
 @AutoConfigureMockMvc
 class AuthControllerIntegrationTest {
 
@@ -107,24 +111,43 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    void deveRegistrarUsuarioComSenhaCriptografada() throws Exception {
+    void deveRegistrarUsuarioComRolePadraoRecepcaoEEmailNormalizado() throws Exception {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerJson("Admin", "admin@email.com", "123456", Role.ADMIN)))
+                        .content(registerJson("Novo Usuario", "USER@email.com", "123456")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isString())
-                .andExpect(jsonPath("$.email").value("admin@email.com"))
-                .andExpect(jsonPath("$.role").value("ADMIN"))
-                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+                .andExpect(jsonPath("$.email").value("user@email.com"))
+                .andExpect(jsonPath("$.role").value("RECEPCAO"));
 
-        Usuario usuario = usuarioRepository.findByEmail("admin@email.com").orElseThrow();
+        Usuario usuario = usuarioRepository.findByEmail("user@email.com").orElseThrow();
+        assertEquals("user@email.com", usuario.getEmail());
+        assertEquals(Role.RECEPCAO, usuario.getRole());
         assertTrue(passwordEncoder.matches("123456", usuario.getPasswordHash()));
+    }
+
+    @Test
+    void deveRejeitarLoginDeUsuarioInativo() throws Exception {
+        Usuario usuario = Usuario.builder()
+                .nome("Inativo")
+                .email("inativo@email.com")
+                .passwordHash(passwordEncoder.encode("123456"))
+                .role(Role.RECEPCAO)
+                .ativo(false)
+                .build();
+        usuarioRepository.save(usuario);
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson("inativo@email.com", "123456")))
+                .andExpect(status().isUnauthorized());
     }
 
     private void criarUsuario(String nome, String email, String senha, Role role) {
         usuarioRepository.save(Usuario.builder()
                 .nome(nome)
                 .email(email)
+                .username(email)
                 .passwordHash(passwordEncoder.encode(senha))
                 .role(role)
                 .ativo(true)
@@ -143,17 +166,16 @@ class AuthControllerIntegrationTest {
 
     private String loginJson(String email, String senha) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
-                "username", email,
+                "login", email,
                 "password", senha
         ));
     }
 
-    private String registerJson(String nome, String email, String senha, Role role) throws Exception {
+    private String registerJson(String nome, String email, String senha) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
                 "nome", nome,
                 "email", email,
-                "senha", senha,
-                "role", role
+                "senha", senha
         ));
     }
 }

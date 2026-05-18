@@ -1,5 +1,7 @@
 package com.extreme.gym.security;
 
+import com.extreme.gym.entity.Usuario;
+import com.extreme.gym.repository.UsuarioRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(
@@ -37,12 +40,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authorization.substring(BEARER_PREFIX.length());
         jwtService.validateToken(token).ifPresent(jwtUser -> {
-            var authentication = new UsernamePasswordAuthenticationToken(
-                    jwtUser.email(),
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + jwtUser.role().name()))
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Verifica se o usuario ainda existe e esta ativo no banco
+            usuarioRepository.findByEmail(jwtUser.email())
+                    .filter(Usuario::getAtivo)
+                    .ifPresent(usuario -> {
+                        var authentication = new UsernamePasswordAuthenticationToken(
+                                jwtUser.email(),
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + jwtUser.role().name()))
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    });
         });
 
         filterChain.doFilter(request, response);

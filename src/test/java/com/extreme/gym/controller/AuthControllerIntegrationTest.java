@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -114,11 +115,71 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isString())
                 .andExpect(jsonPath("$.email").value("admin@email.com"))
-                .andExpect(jsonPath("$.role").value("ADMIN"))
+                .andExpect(jsonPath("$.role").value("RECEPCAO"))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
         Usuario usuario = usuarioRepository.findByEmail("admin@email.com").orElseThrow();
         assertTrue(passwordEncoder.matches("123456", usuario.getPasswordHash()));
+        assertEquals(Role.RECEPCAO, usuario.getRole());
+    }
+
+    @Test
+    void naoDevePermitirCriarAdminViaRegistroPublico() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerJson("Admin Publico", "admin-publico@email.com", "123456", Role.ADMIN)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("RECEPCAO"));
+
+        Usuario usuario = usuarioRepository.findByEmail("admin-publico@email.com").orElseThrow();
+        assertEquals(Role.RECEPCAO, usuario.getRole());
+    }
+
+    @Test
+    void tokenValidoDeUsuarioAtivoDeveAutenticar() throws Exception {
+        criarUsuario("Recepcao", "ativo@email.com", "123456", Role.RECEPCAO);
+        String token = autenticar("ativo@email.com", "123456");
+
+        mockMvc.perform(get("/alunos")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void tokenDeUsuarioInexistenteNaoDeveAutenticar() throws Exception {
+        criarUsuario("Recepcao", "removido@email.com", "123456", Role.RECEPCAO);
+        String token = autenticar("removido@email.com", "123456");
+        usuarioRepository.deleteAll();
+
+        mockMvc.perform(get("/alunos")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void tokenDeUsuarioInativoNaoDeveAutenticar() throws Exception {
+        criarUsuario("Recepcao", "inativo@email.com", "123456", Role.RECEPCAO);
+        String token = autenticar("inativo@email.com", "123456");
+        Usuario usuario = usuarioRepository.findByEmail("inativo@email.com").orElseThrow();
+        usuario.setAtivo(false);
+        usuarioRepository.save(usuario);
+
+        mockMvc.perform(get("/alunos")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void roleAtualDoBancoDevePrevalecerSobreRoleAntigaDoToken() throws Exception {
+        criarUsuario("Catraca", "role-alterada@email.com", "123456", Role.CATRACA);
+        String token = autenticar("role-alterada@email.com", "123456");
+        Usuario usuario = usuarioRepository.findByEmail("role-alterada@email.com").orElseThrow();
+        usuario.setRole(Role.RECEPCAO);
+        usuarioRepository.save(usuario);
+
+        mockMvc.perform(get("/alunos")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
     }
 
     private void criarUsuario(String nome, String email, String senha, Role role) {

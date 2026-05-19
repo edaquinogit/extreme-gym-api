@@ -12,7 +12,7 @@ O projeto nao exige Maven instalado globalmente, pois usa `mvnw` e `mvnw.cmd`.
 
 O projeto usa profiles Spring para separar desenvolvimento, testes e producao:
 
-- `dev`: profile padrao para execucao local. Usa PostgreSQL via Docker Compose, credenciais locais do Compose, `ddl-auto=update` e Swagger habilitado.
+- `dev`: profile padrao para execucao local. Usa PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
 - `test`: usado pela suite automatizada. Usa H2 em memoria, recria o schema durante os testes e nao depende de PostgreSQL local.
 - `prod`: usado para producao. Exige variaveis de ambiente para o banco, usa `ddl-auto=validate`, desliga SQL detalhado e desabilita Swagger/OpenAPI.
 
@@ -23,6 +23,25 @@ As configuracoes comuns ficam em `src/main/resources/application.properties`. As
 - `src/test/resources/application-test.properties`
 
 Autenticacao/JWT ja existe nesta API. Em `dev` e `prod`, nao use `app.security.enabled=false`; esse escape e aceito apenas no profile `test` para a suite automatizada. O registro publico (`/auth/register`) fica desabilitado por padrao e, quando habilitado, cria apenas usuarios `RECEPCAO`. Integracoes com catraca, QR Code e Face ID permanecem fora desta fase.
+
+## Migrations de banco
+
+O projeto usa Flyway para versionar schema em PostgreSQL. As migrations ficam em:
+
+```text
+src/main/resources/db/migration
+```
+
+A migration inicial `V1__create_initial_schema.sql` cria as tabelas atuais e adiciona constraints criticas de concorrencia:
+
+- uma matricula `ATIVA` por aluno;
+- um pagamento `PAGO` por matricula.
+
+No profile `dev`, o banco PostgreSQL local usa `spring.jpa.hibernate.ddl-auto=validate` e Flyway ativo. Ao subir a aplicacao, o Flyway executa migrations pendentes automaticamente antes da validacao do Hibernate.
+
+No profile `prod`, a configuracao tambem usa Flyway ativo e `ddl-auto=validate`; nenhuma tabela deve ser criada por Hibernate em runtime.
+
+No profile `test`, Flyway fica desabilitado e os testes seguem com H2 e `create-drop`. Essa diferenca e intencional para manter a suite rapida e isolada, porque a migration usa indices unicos parciais especificos de PostgreSQL.
 
 ## Verificar Java
 
@@ -86,6 +105,7 @@ O Docker Compose cria:
 - Volume nomeado `extreme_data` para persistencia do PostgreSQL.
 
 A aplicacao usa explicitamente o profile definido em `SPRING_PROFILES_ACTIVE` no `.env` local. Para o compose de desenvolvimento, o valor esperado e `dev`, evitando queda acidental no profile `local`.
+Com `SPRING_PROFILES_ACTIVE=dev`, o app executa Flyway automaticamente contra o PostgreSQL do Compose.
 
 A aplicacao acessa o banco pelo host interno `postgres`, usando:
 
@@ -195,16 +215,31 @@ No profile `prod`, Swagger UI e OpenAPI JSON ficam desabilitados.
 
 ## Configuracao de producao
 
-Para subir a aplicacao em producao, use o profile `prod` e informe os dados do banco por variaveis de ambiente:
+Para subir a aplicacao em producao, use o profile `prod` e informe os dados do banco e secrets por variaveis de ambiente:
 
 ```bash
 SPRING_PROFILES_ACTIVE=prod
 DATABASE_URL=jdbc:postgresql://host:5432/database
 DATABASE_USERNAME=usuario
 DATABASE_PASSWORD=senha
+JWT_SECRET="$(openssl rand -base64 32)"
+AUTH_REGISTRATION_ENABLED=false
+ADMIN_EMAIL=admin@empresa.com
+ADMIN_USERNAME=admin_prod
+ADMIN_PASSWORD="senha-forte-e-unica"
 ```
 
-O profile `prod` nao possui URL, usuario ou senha fixos no repositorio. Ele tambem usa `spring.jpa.hibernate.ddl-auto=validate`, mantem `spring.jpa.show-sql=false` e desabilita Swagger/OpenAPI.
+O profile `prod` nao possui URL, usuario ou senha fixos no repositorio. Ele executa Flyway, usa `spring.jpa.hibernate.ddl-auto=validate`, mantem `spring.jpa.show-sql=false` e desabilita Swagger/OpenAPI.
+
+## Listagens paginadas
+
+As listagens principais aceitam `page`, `size` e `sort`:
+
+```bash
+curl "http://localhost:8080/alunos?page=0&size=20&sort=id,desc"
+```
+
+Para compatibilidade inicial, os endpoints continuam retornando array JSON de itens, nao um envelope `Page`. O limite padrao e `size=20`, com ordenacao padrao por `id,desc`.
 
 ## Integracao local com frontend
 

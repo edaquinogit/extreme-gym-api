@@ -238,9 +238,9 @@ No profile `prod`, Swagger UI e OpenAPI JSON ficam desabilitados por configuraca
 
 O projeto usa tres profiles principais:
 
-- `dev`: profile padrao local, usa PostgreSQL via Docker Compose, `ddl-auto=update` e Swagger habilitado.
-- `test`: usado pela suite automatizada, usa H2 em memoria e nao exige PostgreSQL real.
-- `prod`: usa variaveis de ambiente para banco, `ddl-auto=validate`, SQL detalhado desligado e Swagger desabilitado.
+- `dev`: profile padrao local, usa PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
+- `test`: usado pela suite automatizada, usa H2 em memoria, Flyway desabilitado e nao exige PostgreSQL real.
+- `prod`: usa variaveis de ambiente para banco, Flyway, `ddl-auto=validate`, SQL detalhado desligado e Swagger desabilitado.
 
 Para producao, configure obrigatoriamente:
 
@@ -296,7 +296,13 @@ Para documentacao completa sobre JWT, veja:
 - [docs/JWT_QUICK_REFERENCE.md](docs/JWT_QUICK_REFERENCE.md) - Quick reference para desenvolvedores
 - [SECURITY_STATUS.md](SECURITY_STATUS.md) - Status de implementacao de seguranca
 
-Catraca, QR Code, Face ID e Flyway permanecem como evolucoes futuras e nao fazem parte desta etapa.
+Flyway versiona o schema em `src/main/resources/db/migration`. Catraca, QR Code e Face ID permanecem como evolucoes futuras e nao fazem parte desta etapa.
+
+As listagens principais aceitam `page`, `size` e `sort`, mantendo resposta em array para compatibilidade inicial. Exemplo:
+
+```bash
+curl "http://localhost:8080/alunos?page=0&size=20&sort=id,desc"
+```
 
 ## Como rodar localmente
 

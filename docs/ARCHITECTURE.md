@@ -2,11 +2,11 @@
 
 ## Visao geral
 
-O Extreme Gym API sera uma aplicacao monolitica modular baseada em Spring Boot, organizada em camadas simples e bem definidas.
+O Extreme Gym API e uma aplicacao monolitica baseada em Spring Boot, organizada em camadas simples e bem definidas, com caminho evolutivo para modularizacao por dominio.
 
 A arquitetura inicial prioriza clareza, baixo acoplamento e facilidade de evolucao. O projeto nao deve introduzir abstracoes antes de haver necessidade real.
 
-## Camadas planejadas
+## Camadas atuais
 
 ### controller
 
@@ -79,13 +79,18 @@ Essa camada deve ser usada apenas quando houver configuracoes reais a centraliza
 - Spring Data JPA para persistencia.
 - Bean Validation para validacao de entradas.
 - Lombok para reduzir codigo repetitivo.
-- Profiles separados para `dev`, `test` e `prod`.
-- `spring.jpa.hibernate.ddl-auto=update` apenas no profile `dev`.
-- `spring.jpa.hibernate.ddl-auto=validate` no profile `prod`.
-- Testes unitarios cobrem os services dos modulos implementados no MVP.
+- Profiles separados para `local`, `dev`, `test` e `prod`.
+- Flyway ativo em `dev` e `prod`, com migrations em `src/main/resources/db/migration`.
+- `spring.jpa.hibernate.ddl-auto=validate` em `dev` e `prod`.
+- Profile `local` com H2 para execucao rapida sem PostgreSQL.
+- Profile `test` com H2, `ddl-auto=create-drop` e Flyway desabilitado para manter a suite independente de variaveis reais.
+- Testes unitarios e de controller/integracao cobrem os services e contratos HTTP dos modulos implementados no MVP.
 - O profile de teste usa H2, mantendo PostgreSQL para execucao local via Docker.
 - A API expoe documentacao automatica via springdoc-openapi, com Swagger UI e OpenAPI JSON habilitados em `dev` e desabilitados em `prod`.
-- Flyway, testes de integracao, Testcontainers e autenticacao serao avaliados em fases futuras.
+- Spring Security protege endpoints com JWT e RBAC.
+- O filtro JWT revalida o usuario no banco e usa a role atual persistida.
+- Listagens principais usam `Pageable` com defaults de pagina/tamanho/ordenacao, mantendo resposta em array nesta etapa para compatibilidade.
+- Testcontainers, deploy cloud e integracoes fisicas serao avaliados em fases futuras.
 
 ## Fluxo do MVP
 

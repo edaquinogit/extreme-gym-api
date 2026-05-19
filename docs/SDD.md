@@ -35,11 +35,12 @@ Esta etapa inicial nao inclui:
 
 - Migracao completa para arquitetura modular por dominio.
 - Microsservicos.
-- Autenticacao completa com JWT.
 - Criacao imediata de frontend.
 - Integracoes reais com catraca, QR Code, Face ID ou WhatsApp.
 - Refatoracao ampla de services e entities.
 - Alteracoes destrutivas no banco de dados.
+- Refresh token, rotacao de tokens e rate limiting.
+- Testcontainers para validacao automatizada contra PostgreSQL real.
 
 ## 4. Arquitetura Atual
 
@@ -58,10 +59,9 @@ Pontos positivos:
 
 Pontos de atencao:
 
-- Ainda nao existe seguranca/autenticacao.
-- O banco ainda nao e versionado por migrations.
-- Listagens retornam listas completas em varios endpoints.
-- Regras criticas dependem apenas de validacao em service.
+- Refresh token, rotacao de tokens e rate limiting ainda nao foram implementados.
+- A suite de testes ainda usa H2 no profile `test`; migrations PostgreSQL sao validadas por configuracao e compose, nao por Testcontainers.
+- Listagens principais ja aceitam paginacao, mas ainda retornam array para preservar compatibilidade inicial.
 - Services podem crescer demais se novos fluxos forem adicionados sem modularizacao.
 - Datas sao obtidas diretamente via `LocalDate.now()` e `LocalDateTime.now()` em pontos de regra.
 
@@ -122,7 +122,7 @@ Responsavel por cadastro, consulta, atualizacao e estado operacional do aluno.
 Evolucoes previstas:
 
 - Filtros por nome, CPF e status.
-- Paginacao.
+- Resposta paginada completa com metadados, quando o contrato puder evoluir.
 - Historico de alteracoes sensiveis.
 - Associacao futura com usuario do tipo `ALUNO`.
 
@@ -132,7 +132,7 @@ Responsavel por planos disponiveis para matriculas.
 
 Evolucoes previstas:
 
-- Paginacao e filtros por nome e ativo.
+- Resposta paginada completa com metadados e filtros por nome e ativo.
 - Regras de inativacao segura.
 - Historico de preco, se necessario.
 
@@ -143,7 +143,6 @@ Responsavel pelo vinculo entre aluno e plano.
 Evolucoes previstas:
 
 - Motivo e data de cancelamento.
-- Constraint para impedir mais de uma matricula ativa por aluno.
 - Filtros por status, aluno, plano e vencimento.
 
 ### Pagamentos
@@ -163,14 +162,12 @@ Responsavel por validar entrada e registrar tentativas reais.
 
 Evolucoes previstas:
 
-- Perfil `CATRACA`.
+- Uso operacional do perfil `CATRACA`.
 - Auditoria de origem da tentativa.
 - Filtros por aluno, periodo e autorizado.
 - Integracoes futuras com QR Code, catraca e Face ID.
 
 ### Usuarios
-
-Modulo ainda nao implementado.
 
 Responsavel por autenticacao, autorizacao e identidade de operadores do sistema.
 
@@ -191,17 +188,16 @@ O modelo atual possui entities para:
 - `Matricula`
 - `Pagamento`
 - `CheckIn`
+- `Usuario`
 
 Evolucoes previstas:
 
-- `Usuario`
-- `Role` ou enum de perfil persistido.
 - Campos de auditoria em entidades sensiveis.
 - Campos de cancelamento em matricula e pagamento.
 - Indices para consultas frequentes.
-- Constraints de integridade para regras criticas.
+- Novas constraints de integridade conforme novas regras criticas forem adicionadas.
 
-As migrations devem ser introduzidas com Flyway antes de novas alteracoes estruturais relevantes.
+O schema inicial esta versionado com Flyway em `src/main/resources/db/migration`.
 
 ## 8. Regras de Negocio
 
@@ -217,7 +213,6 @@ Regras atuais importantes:
 
 Regras que precisam ser fortalecidas:
 
-- Garantir matricula ativa unica tambem no banco.
 - Modelar competencia de pagamento.
 - Bloquear pagamento duplicado por competencia.
 - Registrar motivo e data de cancelamento de matricula.
@@ -253,15 +248,19 @@ Diretrizes:
 
 ## 10. Estrategia de Paginacao e Filtros
 
-Listagens de alto crescimento devem usar `Pageable`.
+Listagens de alto crescimento usam `Pageable` na primeira rodada de producao.
 
-Endpoints candidatos:
+Endpoints paginados:
 
 - `GET /alunos`
 - `GET /planos`
 - `GET /matriculas`
 - `GET /pagamentos`
 - `GET /checkins`
+
+Tambem foram paginados `GET /pagamentos/matricula/{matriculaId}` e `GET /checkins/aluno/{alunoId}`.
+
+Nesta etapa, os endpoints mantem resposta em array para reduzir quebra de compatibilidade. Os metadados completos de `Page` podem ser expostos em uma versao futura ou em endpoints versionados.
 
 Filtros previstos:
 
@@ -303,7 +302,7 @@ Tipos de teste desejados:
 - Testes de controller com MockMvc.
 - Testes de seguranca para token e roles.
 - Testes de filtros e paginacao.
-- Testes de migrations quando Flyway for introduzido.
+- Testes de integridade para regras criticas e validacao futura de migrations com PostgreSQL real.
 - Testes determinísticos para regras temporais usando `Clock`.
 
 Prioridades:
@@ -322,23 +321,19 @@ Prioridades:
 
 ### Etapa 2: Seguranca
 
-- Adicionar Spring Security.
-- Criar modulo inicial de usuarios.
-- Implementar JWT.
-- Criar RBAC.
-- Proteger endpoints.
-- Adicionar testes de autenticacao e autorizacao.
+- Status: concluida.
+- Spring Security, modulo inicial de usuarios, JWT, RBAC, protecao de endpoints e testes de autenticacao/autorizacao foram implementados.
+- O JWT revalida usuario ativo no banco e usa a role atual persistida.
 
 ### Etapa 3: Banco e migrations
 
-- Adicionar Flyway.
-- Criar migrations iniciais.
-- Trocar gradualmente `ddl-auto` para `validate`.
-- Adicionar constraints e indices.
+- Status: concluida para a primeira rodada.
+- Flyway, migration inicial, `ddl-auto=validate` em `dev/prod` e constraints criticas foram implementados.
 
 ### Etapa 4: Paginacao e filtros
 
-- Introduzir `Pageable` em listagens principais.
+- Status: parcialmente concluida.
+- `Pageable` foi introduzido em listagens principais com resposta em array para compatibilidade.
 - Criar filtros simples por modulo.
 - Atualizar testes e documentacao da API.
 

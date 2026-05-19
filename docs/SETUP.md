@@ -12,13 +12,15 @@ O projeto nao exige Maven instalado globalmente, pois usa `mvnw` e `mvnw.cmd`.
 
 O projeto usa profiles Spring para separar desenvolvimento, testes e producao:
 
-- `dev`: profile padrao para execucao local. Usa PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
+- `local`: profile padrao quando `SPRING_PROFILES_ACTIVE` nao e informado. Usa H2 em memoria para execucao rapida.
+- `dev`: profile para execucao local com PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
 - `test`: usado pela suite automatizada. Usa H2 em memoria, recria o schema durante os testes e nao depende de PostgreSQL local.
 - `prod`: usado para producao. Exige variaveis de ambiente para o banco, usa `ddl-auto=validate`, desliga SQL detalhado e desabilita Swagger/OpenAPI.
 
 As configuracoes comuns ficam em `src/main/resources/application.properties`. As configuracoes especificas ficam em:
 
 - `src/main/resources/application-dev.properties`
+- `src/main/resources/application-local.properties`
 - `src/main/resources/application-prod.properties`
 - `src/test/resources/application-test.properties`
 
@@ -166,7 +168,7 @@ Resposta esperada:
 }
 ```
 
-O profile local padrao e `dev`. Se quiser informar explicitamente:
+O profile padrao sem variavel de ambiente e `local`. Para usar PostgreSQL local via Docker Compose, informe explicitamente `dev`:
 
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
@@ -320,7 +322,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na validacao atual do projeto, a suite automatizada passou com 125 testes, 0 falhas, 0 erros e 0 testes ignorados.
+Na validacao atual do projeto, a suite automatizada passou com 155 testes, 0 falhas, 0 erros e 0 testes ignorados.
 
 Os testes usam o profile `test` com H2 em memoria. Portanto, `./mvnw test` nao exige PostgreSQL nem Docker rodando.
 

@@ -128,7 +128,7 @@ Status: concluida para o escopo atual do MVP.
 - Testes unitarios adicionados para services dos modulos principais.
 - Testes de integracao/controller com MockMvc adicionados para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
 - Cenarios principais do MVP validados pela suite automatizada.
-- Ultima validacao conhecida: 125 testes executados, 0 falhas, 0 erros e 0 ignorados.
+- Ultima validacao conhecida: 155 testes executados, 0 falhas, 0 erros e 0 ignorados.
 - Novos testes devem acompanhar futuras regras de negocio, autenticacao, deploy ou integracoes.
 
 ## Fase 9: Swagger
@@ -143,20 +143,36 @@ Status: concluida.
 
 ## Fase 10: Autenticacao JWT
 
+Status: concluida e reforcada.
+
+- Spring Security adicionado.
+- Fluxo de autenticacao com `POST /auth/login` implementado.
+- RBAC por roles implementado.
+- Registro publico controlado por `AUTH_REGISTRATION_ENABLED`.
+- Registro publico cria apenas role segura `RECEPCAO`.
+- JWT revalida usuario ativo no banco e usa a role atual persistida.
+- Kill-switch de seguranca restrito ao profile `test`.
+- Testes de autenticacao, autorizacao e hardening adicionados.
+
+## Fase 11: Producao, banco e listagens
+
+Status: concluida para a primeira rodada.
+
+- Variaveis de ambiente revisadas para `dev`, `test` e `prod`.
+- Flyway adicionado com migration inicial.
+- `ddl-auto=validate` usado em `dev` e `prod`.
+- Constraints criticas adicionadas para uma matricula ativa por aluno e um pagamento pago por matricula.
+- Listagens principais aceitam `page`, `size` e `sort`.
+- Docker Compose explicita profile e variaveis de seguranca via `.env.example`.
+
+## Fase 12: Deploy futuro
+
 Status: planejada para fase futura.
 
-- Adicionar Spring Security.
-- Criar fluxo de autenticacao.
-- Proteger endpoints conforme necessidade.
-
-## Fase 11: Deploy futuro
-
-Status: planejada para fase futura.
-
-- Preparar variaveis de ambiente.
-- Revisar configuracoes para producao.
-- Avaliar uso de migrations com Flyway.
 - Planejar deploy em ambiente cloud.
+- Adicionar observabilidade, health checks externos e estrategia de backup.
+- Avaliar Testcontainers para validar migrations contra PostgreSQL real.
+- Avaliar refresh token, rotacao de tokens e rate limiting.
 
 ## Evolucao futura: Integracao com catraca, QR Code e Face ID
 

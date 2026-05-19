@@ -30,11 +30,12 @@ O MVP deve contemplar, em ordem:
 | Pagamentos | Implementado | Registra pagamentos confirmados, impede duplicidade de pagamento PAGO e permite cancelamento logico |
 | Check-ins | Implementado | Registra tentativas permitidas ou bloqueadas com motivo claro |
 | Validacao de Acesso | Implementado | Valida se o aluno pode acessar sem registrar check-in ou alterar banco |
+| Usuarios e Auth | Implementado | Login JWT, RBAC, registro publico controlado e revalidacao do usuario no banco |
+| Migrations | Implementado | Flyway com schema inicial e constraints criticas em PostgreSQL |
+| Paginacao | Implementado inicial | Listagens principais aceitam `page`, `size` e `sort` com resposta em array |
 
 ## Fora do escopo atual
 
-- Autenticacao e autorizacao.
-- Controle de perfis de usuario.
 - Integracao com meios de pagamento.
 - Envio de e-mails ou notificacoes.
 - Relatorios avancados.
@@ -42,9 +43,6 @@ O MVP deve contemplar, em ordem:
 - Deploy em nuvem.
 - Multiacademia ou multiempresa.
 - Frontend.
-- Swagger.
-- Flyway.
-- Dockerfile de aplicacao.
 - Integracao com catraca.
 - QR Code para acesso fisico.
 - Face ID ou biometria facial.
@@ -52,6 +50,8 @@ O MVP deve contemplar, em ordem:
 - Automacao de lembretes e retencao de alunos.
 - Integracao com WhatsApp Business Platform ou provedores de mensageria.
 - Entidades, services, controllers ou jobs para notificacoes.
+- Refresh token, rotacao de tokens e rate limiting.
+- Testcontainers para validar PostgreSQL real na suite automatizada.
 
 Integracoes com catraca, QR Code, Face ID e controle fisico de acesso sao evolucoes futuras e nao fazem parte do escopo implementado ate o momento.
 
@@ -77,8 +77,9 @@ A regra de frequencia dependera do modulo de Check-ins. A regra de inadimplencia
 - `Matricula`
 - `Pagamento`
 - `CheckIn`
+- `Usuario`
 
-Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento` e `CheckIn` foram implementadas como entidades persistidas.
+Neste momento, `Aluno`, `Plano`, `Matricula`, `Pagamento`, `CheckIn` e `Usuario` foram implementadas como entidades persistidas.
 
 Validacao de Acesso nao e uma entidade no MVP. Ela e uma camada de service e controller somente leitura para consultar se o aluno pode entrar sem registrar check-in e sem alterar dados no banco.
 
@@ -108,6 +109,10 @@ Validacao de Acesso nao e uma entidade no MVP. Ela e uma camada de service e con
 - Validacoes devem ser feitas na entrada da API usando Bean Validation.
 - Regras devem ficar na camada de service, evitando logica de negocio em controllers.
 - Controllers devem receber requisicoes, delegar ao service e retornar respostas HTTP adequadas.
+- Endpoints operacionais devem exigir JWT valido e role autorizada.
+- Registro publico, quando habilitado, deve criar apenas usuario `RECEPCAO`.
+- JWT deve revalidar usuario ativo no banco e usar a role persistida atual.
+- O banco deve reforcar as regras criticas de matricula ativa unica por aluno e pagamento pago unico por matricula.
 
 ## Ordem de implementacao
 
@@ -121,6 +126,8 @@ Validacao de Acesso nao e uma entidade no MVP. Ela e uma camada de service e con
 8. Check-ins. Concluido.
 9. Validacao de Acesso. Concluido.
 10. Testes adicionais conforme crescimento do dominio.
-11. Swagger.
-12. Autenticacao JWT.
-13. Preparacao para deploy futuro.
+11. Swagger. Concluido.
+12. Autenticacao JWT. Concluido.
+13. Flyway e constraints criticas. Concluido.
+14. Paginacao inicial nas listagens principais. Concluido.
+15. Preparacao para deploy futuro.

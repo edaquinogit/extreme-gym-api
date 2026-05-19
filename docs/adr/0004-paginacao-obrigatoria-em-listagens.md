@@ -18,6 +18,22 @@ Endpoints com crescimento esperado devem retornar respostas paginadas e suportar
 
 A mudanca deve ser feita por modulo, com testes e documentacao atualizados.
 
+## Atualizacao
+
+A primeira rodada de paginacao foi implementada nas listagens principais:
+
+- `GET /alunos`
+- `GET /planos`
+- `GET /matriculas`
+- `GET /pagamentos`
+- `GET /pagamentos/matricula/{matriculaId}`
+- `GET /checkins`
+- `GET /checkins/aluno/{alunoId}`
+
+Os endpoints aceitam `page`, `size` e `sort`, com defaults de `page=0`, `size=20` e `sort=id,desc`.
+
+Para reduzir quebra de compatibilidade, a resposta continua sendo um array com o conteudo da pagina. Expor metadados completos de `Page` deve ser tratado em uma evolucao versionada ou coordenada com consumidores.
+
 ## Consequencias
 
 - A API fica mais adequada para frontend e dashboards.

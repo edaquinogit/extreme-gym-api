@@ -8,6 +8,34 @@ Base URL local:
 http://localhost:8080
 ```
 
+## Autenticacao
+
+Endpoints operacionais exigem JWT no header:
+
+```text
+Authorization: Bearer <token>
+```
+
+`POST /auth/login` retorna o token para usuarios cadastrados.
+
+`POST /auth/register` registra usuario operacional apenas quando `AUTH_REGISTRATION_ENABLED=true`. O payload publico nao define role; o backend cria sempre usuario `RECEPCAO`.
+
+## Paginacao
+
+As listagens principais aceitam parametros de paginacao:
+
+- `page`: pagina iniciando em `0`.
+- `size`: tamanho da pagina, default `20`.
+- `sort`: ordenacao no formato `campo,direcao`, default `id,desc`.
+
+Para compatibilidade inicial, a resposta continua sendo um array com o conteudo da pagina.
+
+Exemplo:
+
+```text
+GET /alunos?page=0&size=20&sort=id,desc
+```
+
 ## Padrao de erro
 
 Erros de negocio e recursos nao encontrados seguem o formato:
@@ -71,6 +99,82 @@ Possiveis status HTTP:
 
 - `200 OK`: API em execucao.
 
+## POST /auth/login
+
+Objetivo: autenticar usuario e retornar JWT.
+
+Metodo HTTP: `POST`
+
+Path: `/auth/login`
+
+Request:
+
+```json
+{
+  "username": "admin@empresa.com",
+  "password": "senha-forte"
+}
+```
+
+Response `200 OK`:
+
+```json
+{
+  "token": "jwt-token",
+  "type": "Bearer",
+  "expiresInSeconds": 3600,
+  "usuarioId": 1,
+  "nome": "Administrador",
+  "username": "admin",
+  "email": "admin@empresa.com",
+  "role": "ADMIN"
+}
+```
+
+Possiveis status HTTP:
+
+- `200 OK`: autenticacao realizada.
+- `401 Unauthorized`: credenciais invalidas.
+
+## POST /auth/register
+
+Objetivo: registrar usuario operacional quando o registro publico estiver habilitado.
+
+Metodo HTTP: `POST`
+
+Path: `/auth/register`
+
+Request:
+
+```json
+{
+  "nome": "Recepcao 01",
+  "email": "recepcao01@empresa.com",
+  "senha": "senha-forte"
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "token": "jwt-token",
+  "type": "Bearer",
+  "expiresInSeconds": 3600,
+  "usuarioId": 2,
+  "nome": "Recepcao 01",
+  "username": "recepcao01@empresa.com",
+  "email": "recepcao01@empresa.com",
+  "role": "RECEPCAO"
+}
+```
+
+Possiveis status HTTP:
+
+- `201 Created`: usuario criado.
+- `400 Bad Request`: dados invalidos ou registro publico desabilitado.
+- `400 Bad Request`: username ou email ja cadastrado.
+
 ## POST /alunos
 
 Objetivo: cadastrar um aluno.
@@ -115,6 +219,8 @@ Objetivo: listar alunos cadastrados.
 Metodo HTTP: `GET`
 
 Path: `/alunos`
+
+Query params opcionais: `page`, `size`, `sort`.
 
 Response `200 OK`:
 

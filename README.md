@@ -32,9 +32,14 @@ Ja esta disponivel:
 - Validacao de acesso sem registro de check-in, preparada para integracoes futuras.
 - Swagger/OpenAPI para documentacao interativa da API.
 - Dockerfile para empacotar e executar a aplicacao via container.
+- Autenticacao JWT com RBAC via Spring Security.
+- Registro publico controlado por configuracao e sem atribuicao externa de role.
+- Flyway versionando o schema inicial em `src/main/resources/db/migration`.
+- Constraints de banco para regras criticas de unicidade.
+- Listagens principais com `page`, `size` e `sort`, mantendo resposta em array para compatibilidade inicial.
 - Testes unitarios de services e testes de integracao/controller com MockMvc.
 
-Ultima validacao conhecida: `125` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
+Ultima validacao conhecida: `155` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
 
 ## Fluxo completo do MVP
 
@@ -74,6 +79,8 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - Maven
 - Spring Web
 - Spring Data JPA
+- Spring Security
+- Flyway
 - PostgreSQL via Docker
 - H2 para desenvolvimento local rapido
 - Docker
@@ -91,7 +98,7 @@ O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco e
 - Separacao em camadas: Controller, Service, Repository, DTO e Entity.
 - Testes unitarios cobrindo services e principais regras de negocio.
 - Testes de integracao/controller com MockMvc para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
-- Suite automatizada validada com `118` testes passando: `0` falhas, `0` erros e `0` ignorados.
+- Suite automatizada validada com `155` testes passando: `0` falhas, `0` erros e `0` ignorados.
 - Profile de teste com H2, mantendo os testes independentes do PostgreSQL local.
 - Ambiente local padrao usando H2 em memoria para facilitar o primeiro login.
 - Ambiente de desenvolvimento com PostgreSQL usando Docker Compose no profile `dev`.
@@ -106,7 +113,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 ### Alunos
 
 - Cadastro de aluno.
-- Listagem de alunos.
+- Listagem de alunos com paginacao por `page`, `size` e `sort`.
 - Busca de aluno por id.
 - Atualizacao de aluno.
 - Remocao de aluno.
@@ -120,7 +127,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 ### Planos
 
 - Cadastro de plano.
-- Listagem de planos.
+- Listagem de planos com paginacao por `page`, `size` e `sort`.
 - Busca de plano por id.
 - Atualizacao de plano.
 - Desativacao de plano por remocao logica.
@@ -134,7 +141,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 ### Matriculas
 
 - Criacao de matricula vinculando aluno e plano.
-- Listagem de matriculas.
+- Listagem de matriculas com paginacao por `page`, `size` e `sort`.
 - Busca de matricula por id.
 - Cancelamento de matricula por alteracao de status.
 - Validacao de aluno existente.
@@ -148,7 +155,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 ### Pagamentos
 
 - Registro de pagamento vinculado a matricula.
-- Listagem de pagamentos.
+- Listagem de pagamentos com paginacao por `page`, `size` e `sort`.
 - Busca de pagamento por id.
 - Listagem de pagamentos por matricula.
 - Cancelamento de pagamento por alteracao de status.
@@ -163,7 +170,7 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 ### Check-ins
 
 - Registro de tentativa de check-in vinculada a aluno.
-- Listagem de check-ins.
+- Listagem de check-ins com paginacao por `page`, `size` e `sort`.
 - Busca de check-in por id.
 - Listagem de check-ins por aluno.
 - Bloqueio de entrada para aluno `BLOQUEADO`, `CANCELADO` ou `INADIMPLENTE`.
@@ -187,12 +194,24 @@ Os detalhes de arquitetura, contrato da API, setup local e regras de negocio fic
 - Nenhuma integracao fisica foi implementada nesta fase.
 - Testes unitarios para os principais cenarios de service.
 
+### Autenticacao e usuarios
+
+- Login em `POST /auth/login` retornando JWT.
+- Registro publico em `POST /auth/register`, controlado por `AUTH_REGISTRATION_ENABLED`.
+- Registro publico cria apenas usuario `RECEPCAO` e ignora qualquer role externa.
+- JWT revalida usuario no banco a cada request autenticada.
+- Usuario inexistente, inativo ou com estado invalido nao autentica.
+- Role atual do banco prevalece sobre role antiga do token.
+- Seguranca nao pode ser desabilitada por propriedade acidental fora do profile `test`.
+- Testes cobrindo autenticacao, autorizacao, registro seguro e revalidacao de JWT.
+
 ## Endpoints disponiveis
 
 | Metodo | Path | Objetivo |
 | --- | --- | --- |
 | `GET` | `/` | Verificar se a API esta rodando |
 | `POST` | `/auth/login` | Autenticar usuario e retornar JWT (contrato documentado no Swagger em dev/local) |
+| `POST` | `/auth/register` | Registrar usuario operacional quando o registro publico estiver habilitado |
 | `POST` | `/alunos` | Cadastrar aluno |
 | `GET` | `/alunos` | Listar alunos |
 | `GET` | `/alunos/{id}` | Buscar aluno por id |
@@ -238,7 +257,8 @@ No profile `prod`, Swagger UI e OpenAPI JSON ficam desabilitados por configuraca
 
 O projeto usa tres profiles principais:
 
-- `dev`: profile padrao local, usa PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
+- `local`: profile padrao quando `SPRING_PROFILES_ACTIVE` nao e informado, usa H2 em memoria para execucao rapida.
+- `dev`: profile para execucao com PostgreSQL via Docker Compose, Flyway, `ddl-auto=validate` e Swagger habilitado.
 - `test`: usado pela suite automatizada, usa H2 em memoria, Flyway desabilitado e nao exige PostgreSQL real.
 - `prod`: usa variaveis de ambiente para banco, Flyway, `ddl-auto=validate`, SQL detalhado desligado e Swagger desabilitado.
 
@@ -352,7 +372,7 @@ No PowerShell:
 
 Quando aparecer `Tomcat started on port 8080`, a aplicacao esta escutando requisicoes HTTP em `localhost:8080`.
 
-Por padrao local, a aplicacao sobe com o profile `dev`.
+Por padrao local, a aplicacao sobe com o profile `local`. O Docker Compose define `SPRING_PROFILES_ACTIVE=dev` explicitamente.
 
 Para validar rapidamente:
 
@@ -384,7 +404,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 125 testes e 0 falhas.
+Na ultima validacao, a suite passou com 155 testes e 0 falhas.
 
 ## Documentacao adicional
 
@@ -399,14 +419,15 @@ Na ultima validacao, a suite passou com 125 testes e 0 falhas.
 
 Ainda nao foram implementados:
 
-- Autenticacao JWT.
-- Flyway.
 - Deploy.
 - Frontend.
 - Integracao com catraca, QR Code, Face ID ou controle fisico de acesso.
+- Refresh token e rotacao de tokens.
+- Rate limiting de endpoints sensiveis.
+- Testcontainers para validar migrations contra PostgreSQL real na suite automatizada.
 
 Esses itens permanecem como evolucoes futuras.
 
 ## Proximo passo
 
-O proximo passo tecnico recomendado e planejar uma fase futura de autenticacao, deploy ou notificacoes, mantendo integracoes fisicas fora do MVP atual ate haver necessidade real.
+O proximo passo tecnico recomendado e preparar deploy/observabilidade, avaliar rate limiting e refresh token, e adicionar testes com PostgreSQL real via Testcontainers para migrations e constraints.

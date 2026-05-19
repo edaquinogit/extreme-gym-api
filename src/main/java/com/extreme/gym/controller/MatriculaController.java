@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,8 +39,10 @@ public class MatriculaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MatriculaResponseDTO>> listar() {
-        return ResponseEntity.ok(matriculaService.listar());
+    public ResponseEntity<List<MatriculaResponseDTO>> listar(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(matriculaService.listar(pageable));
     }
 
     @GetMapping("/{id}")

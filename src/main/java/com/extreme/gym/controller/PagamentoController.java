@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,8 +39,10 @@ public class PagamentoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PagamentoResponseDTO>> listar() {
-        return ResponseEntity.ok(pagamentoService.listar());
+    public ResponseEntity<List<PagamentoResponseDTO>> listar(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(pagamentoService.listar(pageable));
     }
 
     @GetMapping("/{id}")
@@ -46,8 +51,11 @@ public class PagamentoController {
     }
 
     @GetMapping("/matricula/{matriculaId}")
-    public ResponseEntity<List<PagamentoResponseDTO>> listarPorMatricula(@PathVariable Long matriculaId) {
-        return ResponseEntity.ok(pagamentoService.listarPorMatricula(matriculaId));
+    public ResponseEntity<List<PagamentoResponseDTO>> listarPorMatricula(
+            @PathVariable Long matriculaId,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(pagamentoService.listarPorMatricula(matriculaId, pageable));
     }
 
     @PatchMapping("/{id}/cancelar")

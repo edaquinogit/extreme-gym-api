@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,8 +38,10 @@ public class CheckInController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CheckInResponseDTO>> listar() {
-        return ResponseEntity.ok(checkInService.listar());
+    public ResponseEntity<List<CheckInResponseDTO>> listar(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(checkInService.listar(pageable));
     }
 
     @GetMapping("/{id}")
@@ -45,7 +50,10 @@ public class CheckInController {
     }
 
     @GetMapping("/aluno/{alunoId}")
-    public ResponseEntity<List<CheckInResponseDTO>> listarPorAluno(@PathVariable Long alunoId) {
-        return ResponseEntity.ok(checkInService.listarPorAluno(alunoId));
+    public ResponseEntity<List<CheckInResponseDTO>> listarPorAluno(
+            @PathVariable Long alunoId,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(checkInService.listarPorAluno(alunoId, pageable));
     }
 }

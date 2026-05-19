@@ -8,6 +8,7 @@ import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.PlanoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,8 +30,9 @@ public class PlanoService {
         return toResponseDTO(planoRepository.save(plano));
     }
 
-    public List<PlanoResponseDTO> listar() {
-        return planoRepository.findAll()
+    public List<PlanoResponseDTO> listar(Pageable pageable) {
+        return planoRepository.findAll(pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();

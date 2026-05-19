@@ -1,10 +1,11 @@
 package com.extreme.gym.repository;
 
 import com.extreme.gym.entity.CheckIn;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
 
-    List<CheckIn> findByAlunoId(Long alunoId);
+    Page<CheckIn> findByAlunoId(Long alunoId, Pageable pageable);
 }

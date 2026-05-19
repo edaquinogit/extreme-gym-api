@@ -8,6 +8,7 @@ import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,8 +29,9 @@ public class AlunoService {
         return toResponseDTO(alunoRepository.save(aluno));
     }
 
-    public List<AlunoResponseDTO> listar() {
-        return alunoRepository.findAll()
+    public List<AlunoResponseDTO> listar(Pageable pageable) {
+        return alunoRepository.findAll(pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();

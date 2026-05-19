@@ -9,6 +9,7 @@ import com.extreme.gym.repository.CheckInRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,16 +38,18 @@ public class CheckInService {
     }
 
     @Transactional(readOnly = true)
-    public List<CheckInResponseDTO> listar() {
-        return checkInRepository.findAll()
+    public List<CheckInResponseDTO> listar(Pageable pageable) {
+        return checkInRepository.findAll(pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<CheckInResponseDTO> listarPorAluno(Long alunoId) {
-        return checkInRepository.findByAlunoId(alunoId)
+    public List<CheckInResponseDTO> listarPorAluno(Long alunoId, Pageable pageable) {
+        return checkInRepository.findByAlunoId(alunoId, pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();

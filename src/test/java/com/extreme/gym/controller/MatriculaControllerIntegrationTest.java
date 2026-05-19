@@ -107,6 +107,25 @@ class MatriculaControllerIntegrationTest {
     }
 
     @Test
+    void devePaginarListagemDeMatriculasComOrdenacaoPadraoPorIdDesc() throws Exception {
+        Long alunoAnaId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+        Long alunoBrunoId = criarAluno("Bruno Souza", "bruno.souza@email.com", "11888888888");
+        Long planoMensalId = criarPlano("Plano Mensal", "Acesso por 30 dias", "99.90", 30);
+        Long planoTrimestralId = criarPlano("Plano Trimestral", "Acesso por 90 dias", "249.90", 90);
+
+        criarMatricula(alunoAnaId, planoMensalId, LocalDate.of(2026, 5, 10));
+        Long matriculaBrunoId = criarMatricula(alunoBrunoId, planoTrimestralId, LocalDate.of(2026, 5, 11));
+
+        mockMvc.perform(get("/matriculas")
+                        .param("page", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(matriculaBrunoId))
+                .andExpect(jsonPath("$[0].alunoNome").value("Bruno Souza"));
+    }
+
+    @Test
     void deveBuscarMatriculaExistentePorId() throws Exception {
         Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
         Long planoId = criarPlano("Plano Mensal", "Acesso por 30 dias", "99.90", 30);

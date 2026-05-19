@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -65,9 +68,10 @@ class AlunoServiceTest {
         Aluno ana = criarAluno(1L, "Ana Silva", "ana@email.com", "71999990000");
         Aluno bruno = criarAluno(2L, "Bruno Souza", "bruno@email.com", "71988880000");
 
-        when(alunoRepository.findAll()).thenReturn(List.of(ana, bruno));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(alunoRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(ana, bruno)));
 
-        List<AlunoResponseDTO> response = alunoService.listar();
+        List<AlunoResponseDTO> response = alunoService.listar(pageable);
 
         assertThat(response).hasSize(2);
         assertThat(response)

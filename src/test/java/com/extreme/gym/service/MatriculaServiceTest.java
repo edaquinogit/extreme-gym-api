@@ -29,6 +29,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class MatriculaServiceTest {
@@ -58,7 +62,7 @@ class MatriculaServiceTest {
         when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
         when(planoRepository.findById(planoId)).thenReturn(Optional.of(plano));
         when(matriculaRepository.existsByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA)).thenReturn(false);
-        when(matriculaRepository.save(any(Matricula.class))).thenAnswer(invocation -> {
+        when(matriculaRepository.saveAndFlush(any(Matricula.class))).thenAnswer(invocation -> {
             Matricula matricula = invocation.getArgument(0);
             matricula.setId(1L);
             matricula.setDataCadastro(dataCadastro);
@@ -76,7 +80,7 @@ class MatriculaServiceTest {
         assertThat(response.dataFim()).isEqualTo(dataInicio.plusDays(plano.getDuracaoEmDias()));
         assertThat(response.status()).isEqualTo(StatusMatricula.ATIVA);
         assertThat(response.dataCadastro()).isEqualTo(dataCadastro);
-        verify(matriculaRepository).save(any(Matricula.class));
+        verify(matriculaRepository).saveAndFlush(any(Matricula.class));
     }
 
     @Test
@@ -91,7 +95,7 @@ class MatriculaServiceTest {
                 .hasMessage("Aluno nao encontrado com id: 99");
 
         verify(planoRepository, never()).findById(request.planoId());
-        verify(matriculaRepository, never()).save(any(Matricula.class));
+        verify(matriculaRepository, never()).saveAndFlush(any(Matricula.class));
     }
 
     @Test
@@ -108,7 +112,7 @@ class MatriculaServiceTest {
                 .hasMessage("Plano nao encontrado com id: 99");
 
         verify(matriculaRepository, never()).existsByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA);
-        verify(matriculaRepository, never()).save(any(Matricula.class));
+        verify(matriculaRepository, never()).saveAndFlush(any(Matricula.class));
     }
 
     @Test
@@ -125,7 +129,7 @@ class MatriculaServiceTest {
                 .hasMessage("Plano inativo nao pode ser usado em matricula");
 
         verify(matriculaRepository, never()).existsByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA);
-        verify(matriculaRepository, never()).save(any(Matricula.class));
+        verify(matriculaRepository, never()).saveAndFlush(any(Matricula.class));
     }
 
     @Test
@@ -142,7 +146,24 @@ class MatriculaServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Aluno ja possui matricula ativa");
 
-        verify(matriculaRepository, never()).save(any(Matricula.class));
+        verify(matriculaRepository, never()).saveAndFlush(any(Matricula.class));
+    }
+
+    @Test
+    void deveTratarViolacaoDeConstraintAoCriarMatriculaAtivaDuplicada() {
+        Long alunoId = 1L;
+        Long planoId = 1L;
+        MatriculaRequestDTO request = new MatriculaRequestDTO(alunoId, planoId, LocalDate.of(2026, 5, 9));
+
+        when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(criarAluno(alunoId)));
+        when(planoRepository.findById(planoId)).thenReturn(Optional.of(criarPlano(planoId, true)));
+        when(matriculaRepository.existsByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA)).thenReturn(false);
+        when(matriculaRepository.saveAndFlush(any(Matricula.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_matriculas_aluno_ativa"));
+
+        assertThatThrownBy(() -> matriculaService.cadastrar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Aluno ja possui matricula ativa");
     }
 
     @Test
@@ -150,9 +171,10 @@ class MatriculaServiceTest {
         Matricula mensal = criarMatricula(1L, StatusMatricula.ATIVA);
         Matricula anual = criarMatricula(2L, StatusMatricula.CANCELADA);
 
-        when(matriculaRepository.findAll()).thenReturn(List.of(mensal, anual));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(matriculaRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(mensal, anual)));
 
-        List<MatriculaResponseDTO> response = matriculaService.listar();
+        List<MatriculaResponseDTO> response = matriculaService.listar(pageable);
 
         assertThat(response).hasSize(2);
         assertThat(response)

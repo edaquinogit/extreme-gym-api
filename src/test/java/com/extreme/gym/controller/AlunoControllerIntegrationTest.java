@@ -75,6 +75,20 @@ class AlunoControllerIntegrationTest {
     }
 
     @Test
+    void devePaginarListagemDeAlunosComOrdenacaoPadraoPorIdDesc() throws Exception {
+        criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+        Long brunoId = criarAluno("Bruno Souza", "bruno.souza@email.com", "11888888888");
+
+        mockMvc.perform(get("/alunos")
+                        .param("page", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(brunoId))
+                .andExpect(jsonPath("$[0].email").value("bruno.souza@email.com"));
+    }
+
+    @Test
     void deveBuscarAlunoExistentePorId() throws Exception {
         Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
 

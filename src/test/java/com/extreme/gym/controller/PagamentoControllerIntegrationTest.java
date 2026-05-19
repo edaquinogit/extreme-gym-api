@@ -101,6 +101,23 @@ class PagamentoControllerIntegrationTest {
     }
 
     @Test
+    void devePaginarListagemDePagamentosComOrdenacaoPadraoPorIdDesc() throws Exception {
+        Long matriculaAnaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
+        Long matriculaBrunoId = criarMatriculaValida("Bruno Souza", "bruno.souza@email.com", "Plano Trimestral");
+
+        criarPagamento(matriculaAnaId, "99.90", "PIX");
+        Long pagamentoBrunoId = criarPagamento(matriculaBrunoId, "249.90", "CARTAO_CREDITO");
+
+        mockMvc.perform(get("/pagamentos")
+                        .param("page", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(pagamentoBrunoId))
+                .andExpect(jsonPath("$[0].matriculaId").value(matriculaBrunoId));
+    }
+
+    @Test
     void deveBuscarPagamentoExistentePorId() throws Exception {
         Long matriculaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
         Long pagamentoId = criarPagamento(matriculaId, "99.90", "PIX");

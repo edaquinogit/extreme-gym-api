@@ -144,6 +144,25 @@ class CheckInControllerIntegrationTest {
     }
 
     @Test
+    void devePaginarListagemDeCheckInsComOrdenacaoPadraoPorIdDesc() throws Exception {
+        Long matriculaAnaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
+        Long alunoAnaId = buscarAlunoIdPorMatricula(matriculaAnaId);
+        Long alunoBrunoId = criarAluno("Bruno Souza", "bruno.souza@email.com", "11888888888");
+        criarPagamento(matriculaAnaId, "99.90", "PIX");
+
+        registrarCheckIn(alunoAnaId);
+        Long checkInBrunoId = registrarCheckIn(alunoBrunoId);
+
+        mockMvc.perform(get("/checkins")
+                        .param("page", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(checkInBrunoId))
+                .andExpect(jsonPath("$[0].alunoId").value(alunoBrunoId));
+    }
+
+    @Test
     void deveBuscarCheckInExistentePorId() throws Exception {
         Long matriculaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
         Long alunoId = buscarAlunoIdPorMatricula(matriculaId);

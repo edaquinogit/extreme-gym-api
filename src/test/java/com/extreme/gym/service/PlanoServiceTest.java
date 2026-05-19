@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -76,9 +79,10 @@ class PlanoServiceTest {
         Plano mensal = criarPlano(1L, "Plano Mensal", "Acesso livre por 30 dias");
         Plano anual = criarPlano(2L, "Plano Anual", "Acesso livre por 365 dias");
 
-        when(planoRepository.findAll()).thenReturn(List.of(mensal, anual));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(planoRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(mensal, anual)));
 
-        List<PlanoResponseDTO> response = planoService.listar();
+        List<PlanoResponseDTO> response = planoService.listar(pageable);
 
         assertThat(response).hasSize(2);
         assertThat(response)

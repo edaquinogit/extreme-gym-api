@@ -31,6 +31,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class PagamentoServiceTest {
@@ -53,7 +57,7 @@ class PagamentoServiceTest {
 
         when(matriculaRepository.findById(matriculaId)).thenReturn(Optional.of(matricula));
         when(pagamentoRepository.existsByMatriculaIdAndStatus(matriculaId, StatusPagamento.PAGO)).thenReturn(false);
-        when(pagamentoRepository.save(any(Pagamento.class))).thenAnswer(invocation -> {
+        when(pagamentoRepository.saveAndFlush(any(Pagamento.class))).thenAnswer(invocation -> {
             Pagamento pagamento = invocation.getArgument(0);
             pagamento.setId(1L);
             pagamento.setDataCadastro(dataCadastro);
@@ -73,7 +77,7 @@ class PagamentoServiceTest {
         assertThat(response.status()).isEqualTo(StatusPagamento.PAGO);
         assertThat(response.dataPagamento()).isNotNull();
         assertThat(response.dataCadastro()).isEqualTo(dataCadastro);
-        verify(pagamentoRepository).save(any(Pagamento.class));
+        verify(pagamentoRepository).saveAndFlush(any(Pagamento.class));
     }
 
     @Test
@@ -88,7 +92,7 @@ class PagamentoServiceTest {
                 .hasMessage("Matricula nao encontrada com id: 99");
 
         verify(pagamentoRepository, never()).existsByMatriculaIdAndStatus(matriculaId, StatusPagamento.PAGO);
-        verify(pagamentoRepository, never()).save(any(Pagamento.class));
+        verify(pagamentoRepository, never()).saveAndFlush(any(Pagamento.class));
     }
 
     @Test
@@ -104,7 +108,7 @@ class PagamentoServiceTest {
                 .hasMessage("Matricula cancelada nao pode receber pagamento");
 
         verify(pagamentoRepository, never()).existsByMatriculaIdAndStatus(matriculaId, StatusPagamento.PAGO);
-        verify(pagamentoRepository, never()).save(any(Pagamento.class));
+        verify(pagamentoRepository, never()).saveAndFlush(any(Pagamento.class));
     }
 
     @Test
@@ -120,7 +124,7 @@ class PagamentoServiceTest {
                 .hasMessage("Matricula vencida nao pode receber pagamento nesta versao");
 
         verify(pagamentoRepository, never()).existsByMatriculaIdAndStatus(matriculaId, StatusPagamento.PAGO);
-        verify(pagamentoRepository, never()).save(any(Pagamento.class));
+        verify(pagamentoRepository, never()).saveAndFlush(any(Pagamento.class));
     }
 
     @Test
@@ -136,7 +140,23 @@ class PagamentoServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Matricula ja possui pagamento pago registrado");
 
-        verify(pagamentoRepository, never()).save(any(Pagamento.class));
+        verify(pagamentoRepository, never()).saveAndFlush(any(Pagamento.class));
+    }
+
+    @Test
+    void deveTratarViolacaoDeConstraintAoRegistrarPagamentoPagoDuplicado() {
+        Long matriculaId = 1L;
+        PagamentoRequestDTO request = criarRequest(matriculaId);
+
+        when(matriculaRepository.findById(matriculaId))
+                .thenReturn(Optional.of(criarMatricula(matriculaId, StatusMatricula.ATIVA)));
+        when(pagamentoRepository.existsByMatriculaIdAndStatus(matriculaId, StatusPagamento.PAGO)).thenReturn(false);
+        when(pagamentoRepository.saveAndFlush(any(Pagamento.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_pagamentos_matricula_pago"));
+
+        assertThatThrownBy(() -> pagamentoService.registrar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Matricula ja possui pagamento pago registrado");
     }
 
     @Test
@@ -144,9 +164,10 @@ class PagamentoServiceTest {
         Pagamento dinheiro = criarPagamento(1L, StatusPagamento.PAGO);
         Pagamento pix = criarPagamento(2L, StatusPagamento.CANCELADO);
 
-        when(pagamentoRepository.findAll()).thenReturn(List.of(dinheiro, pix));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(pagamentoRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(dinheiro, pix)));
 
-        List<PagamentoResponseDTO> response = pagamentoService.listar();
+        List<PagamentoResponseDTO> response = pagamentoService.listar(pageable);
 
         assertThat(response).hasSize(2);
         assertThat(response)
@@ -159,9 +180,11 @@ class PagamentoServiceTest {
         Long matriculaId = 1L;
         Pagamento pagamento = criarPagamento(1L, StatusPagamento.PAGO);
 
-        when(pagamentoRepository.findByMatriculaId(matriculaId)).thenReturn(List.of(pagamento));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(pagamentoRepository.findByMatriculaId(matriculaId, pageable))
+                .thenReturn(new PageImpl<>(List.of(pagamento)));
 
-        List<PagamentoResponseDTO> response = pagamentoService.listarPorMatricula(matriculaId);
+        List<PagamentoResponseDTO> response = pagamentoService.listarPorMatricula(matriculaId, pageable);
 
         assertThat(response).hasSize(1);
         assertThat(response.getFirst().matriculaId()).isEqualTo(matriculaId);

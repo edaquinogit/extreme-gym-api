@@ -27,6 +27,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class CheckInServiceTest {
@@ -178,9 +181,10 @@ class CheckInServiceTest {
         CheckIn permitido = criarCheckIn(1L, true, "Check-in permitido");
         CheckIn bloqueado = criarCheckIn(2L, false, "Aluno inadimplente");
 
-        when(checkInRepository.findAll()).thenReturn(List.of(permitido, bloqueado));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(checkInRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(permitido, bloqueado)));
 
-        List<CheckInResponseDTO> response = checkInService.listar();
+        List<CheckInResponseDTO> response = checkInService.listar(pageable);
 
         assertThat(response).hasSize(2);
         assertThat(response)
@@ -193,9 +197,10 @@ class CheckInServiceTest {
         Long alunoId = 1L;
         CheckIn checkIn = criarCheckIn(1L, true, "Check-in permitido");
 
-        when(checkInRepository.findByAlunoId(alunoId)).thenReturn(List.of(checkIn));
+        Pageable pageable = PageRequest.of(0, 20);
+        when(checkInRepository.findByAlunoId(alunoId, pageable)).thenReturn(new PageImpl<>(List.of(checkIn)));
 
-        List<CheckInResponseDTO> response = checkInService.listarPorAluno(alunoId);
+        List<CheckInResponseDTO> response = checkInService.listarPorAluno(alunoId, pageable);
 
         assertThat(response).hasSize(1);
         assertThat(response.getFirst().alunoId()).isEqualTo(alunoId);

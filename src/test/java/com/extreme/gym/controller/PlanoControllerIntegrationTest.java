@@ -69,6 +69,20 @@ class PlanoControllerIntegrationTest {
     }
 
     @Test
+    void devePaginarListagemDePlanosComOrdenacaoPadraoPorIdDesc() throws Exception {
+        criarPlano("Plano Mensal", "Acesso por 30 dias", "99.90", 30);
+        Long trimestralId = criarPlano("Plano Trimestral", "Acesso por 90 dias", "249.90", 90);
+
+        mockMvc.perform(get("/planos")
+                        .param("page", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(trimestralId))
+                .andExpect(jsonPath("$[0].nome").value("Plano Trimestral"));
+    }
+
+    @Test
     void deveBuscarPlanoExistentePorId() throws Exception {
         Long planoId = criarPlano("Plano Mensal", "Acesso por 30 dias", "99.90", 30);
 

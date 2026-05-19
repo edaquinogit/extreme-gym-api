@@ -61,3 +61,11 @@ create table check_ins (
     constraint fk_check_ins_alunos foreign key (aluno_id) references alunos (id),
     constraint fk_check_ins_matriculas foreign key (matricula_id) references matriculas (id)
 );
+
+create unique index uk_matriculas_aluno_ativa
+    on matriculas (aluno_id)
+    where status = 'ATIVA';
+
+create unique index uk_pagamentos_matricula_pago
+    on pagamentos (matricula_id)
+    where status = 'PAGO';

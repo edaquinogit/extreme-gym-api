@@ -13,6 +13,8 @@ import com.extreme.gym.repository.PagamentoRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,20 +40,26 @@ public class PagamentoService {
                 .dataPagamento(LocalDateTime.now())
                 .build();
 
-        return toResponseDTO(pagamentoRepository.save(pagamento));
+        try {
+            return toResponseDTO(pagamentoRepository.saveAndFlush(pagamento));
+        } catch (DataIntegrityViolationException exception) {
+            throw new BusinessException("Matricula ja possui pagamento pago registrado");
+        }
     }
 
     @Transactional(readOnly = true)
-    public List<PagamentoResponseDTO> listar() {
-        return pagamentoRepository.findAll()
+    public List<PagamentoResponseDTO> listar(Pageable pageable) {
+        return pagamentoRepository.findAll(pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<PagamentoResponseDTO> listarPorMatricula(Long matriculaId) {
-        return pagamentoRepository.findByMatriculaId(matriculaId)
+    public List<PagamentoResponseDTO> listarPorMatricula(Long matriculaId, Pageable pageable) {
+        return pagamentoRepository.findByMatriculaId(matriculaId, pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();

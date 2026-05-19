@@ -13,6 +13,8 @@ import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PlanoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,12 +42,17 @@ public class MatriculaService {
                 .status(StatusMatricula.ATIVA)
                 .build();
 
-        return toResponseDTO(matriculaRepository.save(matricula));
+        try {
+            return toResponseDTO(matriculaRepository.saveAndFlush(matricula));
+        } catch (DataIntegrityViolationException exception) {
+            throw new BusinessException("Aluno ja possui matricula ativa");
+        }
     }
 
     @Transactional(readOnly = true)
-    public List<MatriculaResponseDTO> listar() {
-        return matriculaRepository.findAll()
+    public List<MatriculaResponseDTO> listar(Pageable pageable) {
+        return matriculaRepository.findAll(pageable)
+                .getContent()
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();

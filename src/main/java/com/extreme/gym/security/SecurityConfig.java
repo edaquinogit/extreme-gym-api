@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -45,20 +46,24 @@ public class SecurityConfig {
             return http.build();
         }
 
-        http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/usuarios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/alunos/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR")
-                        .requestMatchers("/alunos/**").hasAnyRole("ADMIN", "RECEPCAO")
-                        .requestMatchers("/planos/**").hasAnyRole("ADMIN", "RECEPCAO")
-                        .requestMatchers("/matriculas/**").hasAnyRole("ADMIN", "RECEPCAO")
-                        .requestMatchers("/pagamentos/**").hasAnyRole("ADMIN", "RECEPCAO")
-                        .requestMatchers(HttpMethod.GET, "/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR")
-                        .requestMatchers("/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA")
-                        .requestMatchers("/acessos/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA")
-                        .anyRequest().authenticated()
-                )
+        http.authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/", "/auth/**").permitAll();
+                    if (isSwaggerAccessible()) {
+                        auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    } else {
+                        auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").hasRole("ADMIN");
+                    }
+                    auth.requestMatchers("/usuarios/**").hasRole("ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/alunos/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
+                    auth.requestMatchers("/alunos/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/planos/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/matriculas/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/pagamentos/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers(HttpMethod.GET, "/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
+                    auth.requestMatchers("/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.requestMatchers("/acessos/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.anyRequest().authenticated();
+                })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -81,5 +86,9 @@ public class SecurityConfig {
             }
         }
         return false;
+    }
+
+    private boolean isSwaggerAccessible() {
+        return environment.acceptsProfiles(Profiles.of("dev", "local"));
     }
 }

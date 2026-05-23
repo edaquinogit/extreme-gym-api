@@ -4,5 +4,6 @@ public enum StatusAluno {
     ATIVO,
     INADIMPLENTE,
     BLOQUEADO,
-    CANCELADO
+    CANCELADO,
+    INATIVO
 }

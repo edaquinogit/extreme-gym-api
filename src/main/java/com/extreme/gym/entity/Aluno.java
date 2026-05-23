@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Setter
@@ -24,6 +26,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "alunos")
+@SQLDelete(sql = "UPDATE alunos SET status = 'INATIVO' WHERE id = ?")
+@Where(clause = "status <> 'INATIVO'")
 public class Aluno {
 
     @Id

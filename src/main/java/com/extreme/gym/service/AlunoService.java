@@ -3,6 +3,7 @@ package com.extreme.gym.service;
 import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.dto.aluno.AlunoResponseDTO;
 import com.extreme.gym.entity.Aluno;
+import com.extreme.gym.enums.StatusAluno;
 import com.extreme.gym.exception.BusinessException;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
@@ -55,7 +56,8 @@ public class AlunoService {
 
     public void remover(Long id) {
         Aluno aluno = buscarEntidadePorId(id);
-        alunoRepository.delete(aluno);
+        aluno.setStatus(StatusAluno.INATIVO);
+        alunoRepository.save(aluno);
     }
 
     private void validarEmailDuplicado(String email) {

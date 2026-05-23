@@ -1,0 +1,2 @@
+ALTER TABLE alunos ALTER COLUMN status SET DEFAULT 'ATIVO';
+UPDATE alunos SET status = 'ATIVO' WHERE status IS NULL;

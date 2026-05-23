@@ -3,6 +3,10 @@ package com.extreme.gym.config;
 import com.extreme.gym.entity.Usuario;
 import com.extreme.gym.enums.Role;
 import com.extreme.gym.repository.UsuarioRepository;
+import java.security.SecureRandom;
+import java.util.stream.IntStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -14,6 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("dev | local")
 public class AdminUserInitializer implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminUserInitializer.class);
+    private static final String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+    private static final int GENERATED_PASSWORD_LENGTH = 16;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final String adminEmail;
@@ -23,9 +32,9 @@ public class AdminUserInitializer implements CommandLineRunner {
     public AdminUserInitializer(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            @Value("${app.admin.email:admin@extremegym.com}") String adminEmail,
+            @Value("${app.admin.email:admin@extremegym.local}") String adminEmail,
             @Value("${app.admin.username:admin}") String adminUsername,
-            @Value("${app.admin.password:admin123}") String adminPassword
+            @Value("${app.admin.password:}") String adminPassword
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,16 +50,33 @@ public class AdminUserInitializer implements CommandLineRunner {
             return;
         }
 
-        // Credencial apenas para desenvolvimento; altere via ADMIN_PASSWORD fora do ambiente local.
+        String passwordToUse = resolveAdminPassword();
         Usuario admin = Usuario.builder()
                 .nome("Administrador")
                 .email(adminEmail)
                 .username(adminUsername)
-                .passwordHash(passwordEncoder.encode(adminPassword))
+                .passwordHash(passwordEncoder.encode(passwordToUse))
                 .role(Role.ADMIN)
                 .ativo(true)
                 .build();
 
         usuarioRepository.save(admin);
+
+        log.warn("Nenhuma senha administrativa configurada. Usuário '{}' criado com credenciais temporárias. Defina ADMIN_PASSWORD imediatamente.", adminUsername);
+        log.info("Admin temporary credentials: email='{}', username='{}', password='{}'", adminEmail, adminUsername, passwordToUse);
+    }
+
+    private String resolveAdminPassword() {
+        if (adminPassword == null || adminPassword.isBlank()) {
+            return generateSecurePassword();
+        }
+        return adminPassword;
+    }
+
+    private String generateSecurePassword() {
+        return IntStream.range(0, GENERATED_PASSWORD_LENGTH)
+                .map(i -> PASSWORD_CHARACTERS.charAt(SECURE_RANDOM.nextInt(PASSWORD_CHARACTERS.length())))
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }

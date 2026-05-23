@@ -14,7 +14,7 @@ public record RegisterRequest(
         String email,
 
         @NotBlank(message = "Senha e obrigatoria")
-        @Size(min = 6, max = 120, message = "Senha deve ter entre 6 e 120 caracteres")
+        @Size(min = 12, max = 120, message = "Senha deve ter entre 12 e 120 caracteres")
         String senha
 ) {
 }

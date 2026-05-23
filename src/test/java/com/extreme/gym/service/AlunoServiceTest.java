@@ -181,10 +181,12 @@ class AlunoServiceTest {
         Aluno aluno = criarAluno(alunoId, "Ana Silva", "ana@email.com", "71999990000");
 
         when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
+        when(alunoRepository.save(aluno)).thenReturn(aluno);
 
         alunoService.remover(alunoId);
 
-        verify(alunoRepository).delete(aluno);
+        assertThat(aluno.getStatus()).isEqualTo(StatusAluno.INATIVO);
+        verify(alunoRepository).save(aluno);
     }
 
     @Test

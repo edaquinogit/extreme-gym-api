@@ -111,7 +111,7 @@ class AuthControllerIntegrationTest {
     void deveRegistrarUsuarioComSenhaCriptografada() throws Exception {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerJson("Admin", "admin@email.com", "123456", Role.ADMIN)))
+                        .content(registerJson("Admin", "admin@email.com", "admin123Local!", Role.ADMIN)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isString())
                 .andExpect(jsonPath("$.email").value("admin@email.com"))
@@ -119,7 +119,7 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
         Usuario usuario = usuarioRepository.findByEmail("admin@email.com").orElseThrow();
-        assertTrue(passwordEncoder.matches("123456", usuario.getPasswordHash()));
+        assertTrue(passwordEncoder.matches("admin123Local!", usuario.getPasswordHash()));
         assertEquals(Role.RECEPCAO, usuario.getRole());
     }
 
@@ -127,7 +127,7 @@ class AuthControllerIntegrationTest {
     void naoDevePermitirCriarAdminViaRegistroPublico() throws Exception {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerJson("Admin Publico", "admin-publico@email.com", "123456", Role.ADMIN)))
+                        .content(registerJson("Admin Publico", "admin-publico@email.com", "admin123Local!", Role.ADMIN)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.role").value("RECEPCAO"));
 

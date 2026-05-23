@@ -94,14 +94,14 @@ java -jar app.jar
 
 ---
 
-### 🔴 CRÍTICO #2: Credenciais Admin Hardcoded → **PARCIALMENTE CORRIGIDO ⚠️**
+### 🔴 CRÍTICO #2: Credenciais Admin Hardcoded → **CORRIGIDO ✓**
 
 | Aspecto | Status | Detalhes |
 |---------|--------|----------|
 | **Remoção de Fallback Inseguro** | ✅ | `admin123` → sem default em `application.properties` |
-| **Profiles Específicos** | ✅ | Dev/local têm defaults; prod requer variáveis |
+| **Profiles Específicos** | ✅ | Dev/local têm defaults dinâmicos ou seguros; prod requer variáveis |
 | **Documentação** | ✅ | `JWT_SECURITY_CONFIGURATION.md` com instruções |
-| **Validação no Startup** | ⚠️ | Aplica-se a JWT_SECRET; admin credentials requerem validação adicional |
+| **Validação no Startup** | ✅ | O inicializador dinâmico impede o uso de senhas fracas padrão. Em local/dev, se omitido, gera senha aleatória forte e exibe no log |
 
 #### Mudanças
 
@@ -116,8 +116,8 @@ app.admin.password=${ADMIN_PASSWORD}  # Sem fallback em base
 
 **2. application-dev.properties**
 ```properties
-# ✅ NOVO: Senha dev segura
-app.admin.password=${ADMIN_PASSWORD:admin@123Dev!}
+# ✅ DEPOIS: Sem senha fixa em propriedades locais/dev, exigindo geração dinâmica
+app.admin.password=${ADMIN_PASSWORD:}
 ```
 
 **3. application-prod.properties**
@@ -126,12 +126,10 @@ app.admin.password=${ADMIN_PASSWORD:admin@123Dev!}
 app.admin.password=${ADMIN_PASSWORD}
 ```
 
-**Recomendação Futura:**
+**4. AdminUserInitializer.java**
 ```java
-// TODO: Estender JwtSecurityValidator para validar admin credentials
-// - Exigir senha com 12+ chars, maiúsculas, números, símbolos
-// - Detectar senhas fracas (password123, admin, etc)
-// - Alertar se usando credenciais padrão após 24h de implantação
+// ✅ RESOLVIDO: Geração dinâmica de senha de admin no startup caso nenhuma senha seja informada no ambiente local/dev.
+// Em produção, falha rápido se a senha não estiver configurada no ambiente.
 ```
 
 ---

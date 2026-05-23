@@ -48,7 +48,7 @@ class AuthRegistrationDisabledIntegrationTest {
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "nome", "Recepcao",
                                 "email", "recepcao@email.com",
-                                "senha", "123456"
+                                "senha", "admin123Local!"
                         ))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Registro publico de usuarios esta desabilitado"));

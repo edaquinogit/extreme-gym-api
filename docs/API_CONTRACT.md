@@ -355,7 +355,7 @@ Possiveis status HTTP:
 
 ## DELETE /alunos/{id}
 
-Objetivo: remover um aluno pelo identificador.
+Objetivo: desativar um aluno pelo identificador, sem exclusao fisica (Soft Delete). O status do aluno e alterado para INATIVO.
 
 Metodo HTTP: `DELETE`
 
@@ -369,7 +369,7 @@ Sem corpo de resposta.
 
 Possiveis status HTTP:
 
-- `204 No Content`: aluno removido.
+- `204 No Content`: aluno desativado (soft delete realizado com sucesso).
 - `404 Not Found`: aluno nao encontrado.
 
 ## POST /planos

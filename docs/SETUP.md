@@ -125,7 +125,7 @@ JWT_SECRET=dev-compose-MzA3...
 AUTH_REGISTRATION_ENABLED=false
 ADMIN_EMAIL=admin@extremegym.local
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin@123DevLocalOnly!
+ADMIN_PASSWORD=admin@123Dev!
 ```
 
 Para acompanhar os logs da aplicacao:

@@ -47,7 +47,9 @@ public class SecurityConfig {
         }
 
         http.authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/", "/auth/**").permitAll();
+                // Allow public access to SPA entry and static assets so browser
+                // navigation to client routes works without authentication.
+                auth.requestMatchers("/", "/index.html", "/assets/**", "/favicon.svg", "/icons.svg", "/auth/**").permitAll();
                     if (isSwaggerAccessible()) {
                         auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                     } else {

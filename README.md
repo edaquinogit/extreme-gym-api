@@ -346,7 +346,7 @@ cd C:\Users\ednal\Documents\Projetos\extreme-gym-api\extreme-gym-api
 docker compose up -d --build
 ```
 
-Antes do primeiro `docker compose up`, copie `.env.example` para `.env` e ajuste os valores locais. O compose usa `SPRING_PROFILES_ACTIVE=dev`, exige `JWT_SECRET` via ambiente e mantem `AUTH_REGISTRATION_ENABLED=false` por padrao.
+Antes do primeiro `docker compose up`, copie `.env.example` para `.env` e ajuste os valores locais. O compose padrao e de desenvolvimento, usa `SPRING_PROFILES_ACTIVE=dev`, fornece defaults apenas locais para subida rapida e mantem `AUTH_REGISTRATION_ENABLED=false` por padrao.
 
 Verificar se os containers estao rodando:
 
@@ -354,7 +354,7 @@ Verificar se os containers estao rodando:
 docker compose ps
 ```
 
-Os containers esperados sao `extreme-postgres` e `extreme-gym-api`. Os detalhes operacionais ficam em [docs/SETUP.md](docs/SETUP.md).
+Os containers esperados sao `extreme-postgres` e `extreme-gym-api`. Os detalhes operacionais ficam em [docs/SETUP.md](docs/SETUP.md) e [docs/docker.md](docs/docker.md).
 
 ## Rodar a aplicacao
 
@@ -388,7 +388,14 @@ Resposta esperada:
 }
 ```
 
-Tambem e possivel gerar e executar apenas a imagem Docker da aplicacao. Os comandos completos ficam em [docs/SETUP.md](docs/SETUP.md).
+Tambem e possivel gerar e executar apenas a imagem Docker da aplicacao:
+
+```bash
+docker build -t extreme-gym-api:local .
+docker build --build-arg SKIP_TESTS=false -t extreme-gym-api:test .
+```
+
+Os comandos completos ficam em [docs/SETUP.md](docs/SETUP.md) e [docs/docker.md](docs/docker.md).
 
 ## Rodar os testes
 
@@ -411,6 +418,7 @@ Na ultima validacao, a suite passou com 155 testes e 0 falhas.
 - [Escopo do projeto](PROJECT_SCOPE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Setup local](docs/SETUP.md)
+- [Docker e ambientes](docs/docker.md)
 - [Contrato da API](docs/API_CONTRACT.md)
 - [Regras de negocio](docs/BUSINESS_RULES.md)
 - [Arquitetura](docs/ARCHITECTURE.md)

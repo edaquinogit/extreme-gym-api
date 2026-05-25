@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Frontend ###
+frontend/
+
 ### Logs ###
 *.log
 logs/

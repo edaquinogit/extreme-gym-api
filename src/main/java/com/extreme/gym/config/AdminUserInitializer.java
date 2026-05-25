@@ -62,8 +62,13 @@ public class AdminUserInitializer implements CommandLineRunner {
 
         usuarioRepository.save(admin);
 
-        log.warn("Nenhuma senha administrativa configurada. Usuário '{}' criado com credenciais temporárias. Defina ADMIN_PASSWORD imediatamente.", adminUsername);
-        log.info("Admin temporary credentials: email='{}', username='{}', password='{}'", adminEmail, adminUsername, passwordToUse);
+        if (adminPassword == null || adminPassword.isBlank()) {
+            log.warn("Nenhuma senha administrativa configurada. Usuario '{}' criado com credenciais temporarias. Defina ADMIN_PASSWORD imediatamente.", adminUsername);
+            log.info("Admin temporary credentials: email='{}', username='{}', password='{}'", adminEmail, adminUsername, passwordToUse);
+            return;
+        }
+
+        log.info("Usuario administrador local criado: email='{}', username='{}'", adminEmail, adminUsername);
     }
 
     private String resolveAdminPassword() {

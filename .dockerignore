@@ -2,12 +2,20 @@
 .github
 .vscode
 .idea
+*.iml
 
 target
+logs
 *.log
 
 .DS_Store
 Thumbs.db
 
+frontend
+frontend/node_modules
+frontend/dist
+node_modules
+dist
+npm-debug.log
+
 HELP.md
-docker-compose.yml

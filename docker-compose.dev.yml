@@ -1,5 +1,4 @@
-# Development stack for the backend API. Production-like settings live in
-# docker-compose.prod.example.yml.
+# Explicit development stack for the backend API.
 services:
   postgres:
     image: postgres:16

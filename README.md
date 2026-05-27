@@ -39,7 +39,7 @@ Ja esta disponivel:
 - Listagens principais com `page`, `size` e `sort`, mantendo resposta em array para compatibilidade inicial.
 - Testes unitarios de services e testes de integracao/controller com MockMvc.
 
-Ultima validacao conhecida: `155` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
+Ultima validacao conhecida: `159` testes executados, com `0` falhas, `0` erros e build finalizado com sucesso.
 
 ## Fluxo completo do MVP
 
@@ -91,6 +91,28 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 - Mockito
 - springdoc-openapi
 
+## Comandos de build por repositorio
+
+Este repositorio e o backend Java/Spring Boot. Por isso, o build da API deve ser executado com Maven:
+
+```bash
+./mvnw test
+./mvnw package
+```
+
+O frontend oficial fica em um repositorio separado:
+
+```text
+https://github.com/edaquinogit/extreme-gym-web.git
+```
+
+Para buildar ou rodar o frontend, execute os comandos dentro do repositorio `extreme-gym-web`:
+
+```bash
+npm run build
+npm run dev
+```
+
 ## Qualidade, testes e documentacao
 
 O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco em clareza de arquitetura, regras de negocio testaveis e documentacao objetiva para avaliacao tecnica.
@@ -98,7 +120,7 @@ O Extreme Gym API foi organizado como um MVP backend Java/Spring Boot com foco e
 - Separacao em camadas: Controller, Service, Repository, DTO e Entity.
 - Testes unitarios cobrindo services e principais regras de negocio.
 - Testes de integracao/controller com MockMvc para Alunos, Planos, Matriculas, Pagamentos, Check-ins e Validacao de Acesso.
-- Suite automatizada validada com `155` testes passando: `0` falhas, `0` erros e `0` ignorados.
+- Suite automatizada validada com `159` testes passando: `0` falhas, `0` erros e `0` ignorados.
 - Profile de teste com H2, mantendo os testes independentes do PostgreSQL local.
 - Ambiente local padrao usando H2 em memoria para facilitar o primeiro login.
 - Ambiente de desenvolvimento com PostgreSQL usando Docker Compose no profile `dev`.
@@ -411,7 +433,7 @@ No PowerShell:
 .\mvnw test
 ```
 
-Na ultima validacao, a suite passou com 155 testes e 0 falhas.
+Na ultima validacao, a suite passou com 159 testes e 0 falhas. O registro da execucao esta em [REPORTS/test-run-2026-05-27.md](REPORTS/test-run-2026-05-27.md).
 
 ## Documentacao adicional
 

@@ -11,6 +11,7 @@ import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class AcessoService {
     private final AlunoRepository alunoRepository;
     private final MatriculaRepository matriculaRepository;
     private final PagamentoRepository pagamentoRepository;
+    private final Clock clock;
 
     public AcessoResponseDTO validar(AcessoRequestDTO request) {
         return toResponseDTO(validarAluno(request.alunoId()));
@@ -55,7 +57,7 @@ public class AcessoService {
     }
 
     private ResultadoAcesso validarMatricula(Aluno aluno, Matricula matricula) {
-        if (matricula.getDataFim().isBefore(LocalDate.now())) {
+        if (matricula.getDataFim().isBefore(LocalDate.now(clock))) {
             return ResultadoAcesso.bloqueado(aluno, matricula, "Matricula vencida");
         }
         if (!pagamentoRepository.existsByMatriculaIdAndStatus(matricula.getId(), StatusPagamento.PAGO)) {

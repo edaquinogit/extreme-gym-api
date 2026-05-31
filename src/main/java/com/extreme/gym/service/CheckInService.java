@@ -6,6 +6,7 @@ import com.extreme.gym.entity.CheckIn;
 import com.extreme.gym.entity.Matricula;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.CheckInRepository;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class CheckInService {
 
     private final CheckInRepository checkInRepository;
     private final AcessoService acessoService;
+    private final Clock clock;
 
     public CheckInResponseDTO registrar(CheckInRequestDTO request) {
         AcessoService.ResultadoAcesso resultado = acessoService.validarAluno(request.alunoId());
@@ -29,7 +31,7 @@ public class CheckInService {
         CheckIn checkIn = CheckIn.builder()
                 .aluno(resultado.aluno())
                 .matricula(Boolean.TRUE.equals(resultado.acessoLiberado()) ? resultado.matricula() : null)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(clock))
                 .permitido(resultado.acessoLiberado())
                 .motivo(montarMotivoCheckIn(resultado))
                 .build();

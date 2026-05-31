@@ -64,7 +64,7 @@ public class AdminUserInitializer implements CommandLineRunner {
 
         if (adminPassword == null || adminPassword.isBlank()) {
             log.warn("Nenhuma senha administrativa configurada. Usuario '{}' criado com credenciais temporarias. Defina ADMIN_PASSWORD imediatamente.", adminUsername);
-            log.info("Admin temporary credentials: email='{}', username='{}', password='{}'", adminEmail, adminUsername, passwordToUse);
+            log.warn("Senha temporaria do admin nao sera exibida em log por seguranca. Reconfigure ADMIN_PASSWORD e recrie o usuario se necessario.");
             return;
         }
 

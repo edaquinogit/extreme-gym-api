@@ -22,13 +22,16 @@ import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -45,13 +48,19 @@ class PagamentoServiceTest {
     @Mock
     private MatriculaRepository matriculaRepository;
 
-    @InjectMocks
+    private final Clock clock = Clock.fixed(Instant.parse("2026-05-27T12:00:00Z"), ZoneId.of("America/Bahia"));
+
     private PagamentoService pagamentoService;
+
+    @BeforeEach
+    void setUp() {
+        pagamentoService = new PagamentoService(pagamentoRepository, matriculaRepository, clock);
+    }
 
     @Test
     void deveRegistrarPagamentoComSucesso() {
         Long matriculaId = 1L;
-        LocalDateTime dataCadastro = LocalDateTime.now();
+        LocalDateTime dataCadastro = LocalDateTime.now(clock);
         PagamentoRequestDTO request = criarRequest(matriculaId);
         Matricula matricula = criarMatricula(matriculaId, StatusMatricula.ATIVA);
 
@@ -262,8 +271,8 @@ class PagamentoServiceTest {
                 .valor(BigDecimal.valueOf(99.90))
                 .formaPagamento(FormaPagamento.PIX)
                 .status(status)
-                .dataPagamento(LocalDateTime.now())
-                .dataCadastro(LocalDateTime.now())
+                .dataPagamento(LocalDateTime.now(clock))
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -277,7 +286,7 @@ class PagamentoServiceTest {
                 .dataInicio(dataInicio)
                 .dataFim(dataInicio.plusDays(30))
                 .status(status)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -288,7 +297,7 @@ class PagamentoServiceTest {
                 .email("ana.silva@email.com")
                 .telefone("71999990000")
                 .status(StatusAluno.ATIVO)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -300,7 +309,7 @@ class PagamentoServiceTest {
                 .valorMensal(BigDecimal.valueOf(99.90))
                 .duracaoEmDias(30)
                 .ativo(true)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 }

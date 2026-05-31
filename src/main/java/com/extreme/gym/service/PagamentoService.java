@@ -10,6 +10,7 @@ import com.extreme.gym.exception.BusinessException;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class PagamentoService {
 
     private final PagamentoRepository pagamentoRepository;
     private final MatriculaRepository matriculaRepository;
+    private final Clock clock;
 
     public PagamentoResponseDTO registrar(PagamentoRequestDTO request) {
         Matricula matricula = buscarMatriculaPorId(request.matriculaId());
@@ -37,7 +39,7 @@ public class PagamentoService {
                 .valor(request.valor())
                 .formaPagamento(request.formaPagamento())
                 .status(StatusPagamento.PAGO)
-                .dataPagamento(LocalDateTime.now())
+                .dataPagamento(LocalDateTime.now(clock))
                 .build();
 
         try {

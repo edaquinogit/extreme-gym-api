@@ -20,12 +20,15 @@ import com.extreme.gym.repository.AlunoRepository;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,14 +44,20 @@ class AcessoServiceTest {
     @Mock
     private PagamentoRepository pagamentoRepository;
 
-    @InjectMocks
+    private final Clock clock = Clock.fixed(Instant.parse("2026-05-27T12:00:00Z"), ZoneId.of("America/Bahia"));
+
     private AcessoService acessoService;
+
+    @BeforeEach
+    void setUp() {
+        acessoService = new AcessoService(alunoRepository, matriculaRepository, pagamentoRepository, clock);
+    }
 
     @Test
     void deveLiberarAcessoComAlunoAtivoMatriculaAtivaNaoVencidaEPagamentoPago() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
+        Matricula matricula = criarMatricula(1L, aluno, today().plusDays(30));
 
         when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
         when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
@@ -135,7 +144,7 @@ class AcessoServiceTest {
     void deveBloquearMatriculaVencida() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().minusDays(1));
+        Matricula matricula = criarMatricula(1L, aluno, today().minusDays(1));
 
         when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
         when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
@@ -154,7 +163,7 @@ class AcessoServiceTest {
     void deveBloquearMatriculaSemPagamentoPago() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
+        Matricula matricula = criarMatricula(1L, aluno, today().plusDays(30));
 
         when(alunoRepository.findById(alunoId)).thenReturn(Optional.of(aluno));
         when(matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA))
@@ -186,7 +195,7 @@ class AcessoServiceTest {
                 .email("ana.silva@email.com")
                 .telefone("71999990000")
                 .status(status)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -195,10 +204,10 @@ class AcessoServiceTest {
                 .id(id)
                 .aluno(aluno)
                 .plano(criarPlano(1L))
-                .dataInicio(LocalDate.now())
+                .dataInicio(today())
                 .dataFim(dataFim)
                 .status(StatusMatricula.ATIVA)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -210,7 +219,11 @@ class AcessoServiceTest {
                 .valorMensal(BigDecimal.valueOf(99.90))
                 .duracaoEmDias(30)
                 .ativo(true)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
+    }
+
+    private LocalDate today() {
+        return LocalDate.now(clock);
     }
 }

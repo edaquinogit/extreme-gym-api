@@ -82,6 +82,26 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    void deveBloquearLoginAposMuitasTentativasInvalidas() throws Exception {
+        String email = "rate-limit@email.com";
+        criarUsuario("Rate Limit", email, "123456", Role.ADMIN);
+
+        for (int tentativa = 0; tentativa < 5; tentativa++) {
+            mockMvc.perform(post("/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(loginJson(email, "senha-errada")))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(email, "123456")))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.status").value(429))
+                .andExpect(jsonPath("$.message").value("Muitas tentativas de login. Tente novamente mais tarde."));
+    }
+
+    @Test
     void deveBloquearEndpointProtegidoSemToken() throws Exception {
         mockMvc.perform(get("/alunos"))
                 .andExpect(status().isUnauthorized());

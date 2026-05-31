@@ -18,13 +18,16 @@ import com.extreme.gym.enums.StatusMatricula;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.CheckInRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -40,14 +43,20 @@ class CheckInServiceTest {
     @Mock
     private AcessoService acessoService;
 
-    @InjectMocks
+    private final Clock clock = Clock.fixed(Instant.parse("2026-05-27T12:00:00Z"), ZoneId.of("America/Bahia"));
+
     private CheckInService checkInService;
+
+    @BeforeEach
+    void setUp() {
+        checkInService = new CheckInService(checkInRepository, acessoService, clock);
+    }
 
     @Test
     void deveRegistrarCheckInPermitidoComSucesso() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
+        Matricula matricula = criarMatricula(1L, aluno, today().plusDays(30));
 
         when(acessoService.validarAluno(alunoId))
                 .thenReturn(new AcessoService.ResultadoAcesso(aluno, matricula, true, "Acesso liberado"));
@@ -139,7 +148,7 @@ class CheckInServiceTest {
     void deveBloquearCheckInQuandoMatriculaEstaVencida() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().minusDays(1));
+        Matricula matricula = criarMatricula(1L, aluno, today().minusDays(1));
 
         when(acessoService.validarAluno(alunoId))
                 .thenReturn(new AcessoService.ResultadoAcesso(aluno, matricula, false, "Matricula vencida"));
@@ -157,7 +166,7 @@ class CheckInServiceTest {
     void deveBloquearCheckInQuandoMatriculaNaoPossuiPagamentoPago() {
         Long alunoId = 1L;
         Aluno aluno = criarAluno(alunoId, StatusAluno.ATIVO);
-        Matricula matricula = criarMatricula(1L, aluno, LocalDate.now().plusDays(30));
+        Matricula matricula = criarMatricula(1L, aluno, today().plusDays(30));
 
         when(acessoService.validarAluno(alunoId))
                 .thenReturn(new AcessoService.ResultadoAcesso(
@@ -268,10 +277,10 @@ class CheckInServiceTest {
         return CheckIn.builder()
                 .id(id)
                 .aluno(aluno)
-                .matricula(permitido ? criarMatricula(1L, aluno, LocalDate.now().plusDays(30)) : null)
+                .matricula(permitido ? criarMatricula(1L, aluno, today().plusDays(30)) : null)
                 .permitido(permitido)
                 .motivo(motivo)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -282,7 +291,7 @@ class CheckInServiceTest {
                 .email("ana.silva@email.com")
                 .telefone("71999990000")
                 .status(status)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -291,10 +300,10 @@ class CheckInServiceTest {
                 .id(id)
                 .aluno(aluno)
                 .plano(criarPlano(1L))
-                .dataInicio(LocalDate.now())
+                .dataInicio(today())
                 .dataFim(dataFim)
                 .status(StatusMatricula.ATIVA)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
     }
 
@@ -306,7 +315,11 @@ class CheckInServiceTest {
                 .valorMensal(BigDecimal.valueOf(99.90))
                 .duracaoEmDias(30)
                 .ativo(true)
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(LocalDateTime.now(clock))
                 .build();
+    }
+
+    private LocalDate today() {
+        return LocalDate.now(clock);
     }
 }

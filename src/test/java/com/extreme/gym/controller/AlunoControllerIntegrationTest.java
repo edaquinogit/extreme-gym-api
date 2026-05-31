@@ -1,6 +1,8 @@
 package com.extreme.gym.controller;
 
 import com.extreme.gym.dto.aluno.AlunoRequestDTO;
+import com.extreme.gym.dto.aluno.AlunoStatusUpdateDTO;
+import com.extreme.gym.enums.StatusAluno;
 import com.extreme.gym.repository.AlunoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -18,6 +20,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -220,6 +223,36 @@ class AlunoControllerIntegrationTest {
     }
 
     @Test
+    void deveAlterarStatusDoAluno() throws Exception {
+        Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+
+        mockMvc.perform(patch("/alunos/{id}/status", alunoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusAlunoJson(StatusAluno.BLOQUEADO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alunoId))
+                .andExpect(jsonPath("$.nome").value("Ana Silva"))
+                .andExpect(jsonPath("$.email").value("ana.silva@email.com"))
+                .andExpect(jsonPath("$.telefone").value("11999999999"))
+                .andExpect(jsonPath("$.status").value("BLOQUEADO"));
+    }
+
+    @Test
+    void deveRetornarErroQuandoStatusForNulo() throws Exception {
+        Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+
+        mockMvc.perform(patch("/alunos/{id}/status", alunoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":null}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Dados invalidos"))
+                .andExpect(jsonPath("$.path").value("/alunos/" + alunoId + "/status"))
+                .andExpect(jsonPath("$.errors.status").value("Status e obrigatorio"));
+    }
+
+    @Test
     void deveRemoverAlunoFisicamenteConformeComportamentoAtual() throws Exception {
         Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
 
@@ -247,5 +280,9 @@ class AlunoControllerIntegrationTest {
 
     private String alunoJson(String nome, String email, String telefone) throws Exception {
         return objectMapper.writeValueAsString(new AlunoRequestDTO(nome, email, telefone));
+    }
+
+    private String statusAlunoJson(StatusAluno status) throws Exception {
+        return objectMapper.writeValueAsString(new AlunoStatusUpdateDTO(status));
     }
 }

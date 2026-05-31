@@ -2,6 +2,7 @@ package com.extreme.gym.service;
 
 import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.dto.aluno.AlunoResponseDTO;
+import com.extreme.gym.dto.aluno.AlunoStatusUpdateDTO;
 import com.extreme.gym.entity.Aluno;
 import com.extreme.gym.enums.StatusAluno;
 import com.extreme.gym.exception.BusinessException;
@@ -50,6 +51,13 @@ public class AlunoService {
         aluno.setNome(request.nome());
         aluno.setEmail(request.email());
         aluno.setTelefone(request.telefone());
+
+        return toResponseDTO(alunoRepository.save(aluno));
+    }
+
+    public AlunoResponseDTO alterarStatus(Long id, AlunoStatusUpdateDTO request) {
+        Aluno aluno = buscarEntidadePorId(id);
+        aluno.setStatus(request.status());
 
         return toResponseDTO(alunoRepository.save(aluno));
     }

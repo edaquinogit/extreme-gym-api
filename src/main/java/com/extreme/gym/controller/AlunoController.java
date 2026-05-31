@@ -2,6 +2,7 @@ package com.extreme.gym.controller;
 
 import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.dto.aluno.AlunoResponseDTO;
+import com.extreme.gym.dto.aluno.AlunoStatusUpdateDTO;
 import com.extreme.gym.service.AlunoService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -13,6 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,6 +59,14 @@ public class AlunoController {
             @Valid @RequestBody AlunoRequestDTO request
     ) {
         return ResponseEntity.ok(alunoService.atualizar(id, request));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<AlunoResponseDTO> alterarStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody AlunoStatusUpdateDTO request
+    ) {
+        return ResponseEntity.ok(alunoService.alterarStatus(id, request));
     }
 
     @DeleteMapping("/{id}")

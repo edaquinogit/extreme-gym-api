@@ -12,10 +12,13 @@ import { checkinService } from '../../services/checkinService'
 import { HttpError } from '../../services/httpClient'
 import { matriculaService } from '../../services/matriculaService'
 import { pagamentoService } from '../../services/pagamentoService'
+import type { DispositivoAcessoViewModel } from '../../types/accessDevice'
 import type { AcessoResponse } from '../../types/acesso'
 import type { Aluno, StatusAluno } from '../../types/aluno'
 import type { Matricula } from '../../types/matricula'
 import type { Pagamento } from '../../types/pagamento'
+import { CatracaDeviceStatusPanel } from './CatracaDeviceStatusPanel'
+import { CatracaEmptyState } from './CatracaEmptyState'
 
 type CheckinStatus = 'idle' | 'registering' | 'registered' | 'error'
 
@@ -56,6 +59,7 @@ export function CatracaPage() {
   const [alunoId, setAlunoId] = useState('')
   const [result, setResult] = useState<CatracaResult | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
+  const dispositivo: DispositivoAcessoViewModel | null = null
   const inputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<CatracaResult | null>(null)
   const { getErrorMessage } = useApiError()
@@ -175,7 +179,7 @@ export function CatracaPage() {
         description:
           error instanceof HttpError && error.status === 404
             ? 'Nenhum aluno encontrado com os dados informados.'
-            : getErrorMessage(error),
+            : 'Tente novamente em alguns instantes.',
       })
     }
   }
@@ -316,10 +320,12 @@ export function CatracaPage() {
       </header>
 
       <main className="catraca-body">
+        <CatracaDeviceStatusPanel dispositivo={dispositivo} />
+
         <section className="catraca-input-card" aria-label="Identificação">
           <div className="catraca-input-copy">
             <h1>Identificação do aluno</h1>
-            <p>Informe o ID ou use o leitor de Face ID</p>
+            <p>Informe o ID do aluno para validação manual autorizada.</p>
           </div>
 
           <input
@@ -333,6 +339,7 @@ export function CatracaPage() {
             onChange={(event) => setAlunoId(event.target.value)}
             onKeyDown={handleInputKeyDown}
             autoFocus
+            aria-label="ID do aluno"
           />
 
           <button
@@ -358,9 +365,7 @@ export function CatracaPage() {
             }}
           />
         ) : (
-          <p className="catraca-placeholder">
-            Aguardando identificação do próximo aluno
-          </p>
+          <CatracaEmptyState />
         )}
       </main>
     </div>
@@ -382,7 +387,8 @@ function ResultPanel({
     return (
       <section className="catraca-result catraca-result--loading">
         <div className="spinner" aria-hidden="true" />
-        <p className="catraca-loading-text">Verificando...</p>
+        <p className="catraca-loading-text">Validando acesso...</p>
+        <p className="catraca-hint">Consultando a situação do aluno.</p>
       </section>
     )
   }
@@ -393,7 +399,8 @@ function ResultPanel({
         <div className="catraca-icon ok" aria-hidden="true">
           &#10003;
         </div>
-        <h2 className="catraca-result-title ok">ACESSO LIBERADO</h2>
+        <h2 className="catraca-result-title ok">Acesso liberado.</h2>
+        <p className="catraca-hint">Entrada registrada com sucesso.</p>
 
         <StudentCard
           acesso={result.acesso}
@@ -428,13 +435,15 @@ function ResultPanel({
         <div className="catraca-icon block" aria-hidden="true">
           &#10005;
         </div>
-        <h2 className="catraca-result-title block">ACESSO BLOQUEADO</h2>
+        <h2 className="catraca-result-title block">Acesso bloqueado.</h2>
         <StudentCard
           acesso={result.acesso}
           snapshot={result.snapshot}
           tone="blocked"
         />
-        <div className="catraca-motivo">{result.acesso.motivo}</div>
+        <div className="catraca-motivo">
+          Motivo: {result.acesso.motivo || 'não informado pela API.'}
+        </div>
         <p className="catraca-hint">{getActionHint(result.acesso.motivo)}</p>
         <Countdown seconds={countdown} />
       </section>
@@ -462,6 +471,7 @@ type StudentCardProps = {
 function StudentCard({ acesso, snapshot, tone }: StudentCardProps) {
   const { aluno, matricula, pagamento } = snapshot
   const status = aluno?.status ?? 'ATIVO'
+  const alunoNome = acesso.alunoNome || aluno?.nome || 'Aluno sem nome informado'
   const whatsappUrl = aluno
     ? getWhatsAppUrl(aluno, acesso, matricula, pagamento)
     : null
@@ -469,13 +479,13 @@ function StudentCard({ acesso, snapshot, tone }: StudentCardProps) {
   return (
     <div className="student-card student-card--detailed">
       <span className="student-avatar" aria-hidden="true">
-        {getInitials(acesso.alunoNome)}
+        {getInitials(alunoNome)}
       </span>
 
       <div className="student-info">
         <div className="student-info-header">
           <div>
-            <div className="student-name">{acesso.alunoNome}</div>
+            <div className="student-name">{alunoNome}</div>
             <div className="student-email">
               {aluno?.email ?? 'Email indisponível'}
             </div>

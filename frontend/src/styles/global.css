@@ -1510,6 +1510,88 @@ h1 {
   gap: 14px;
 }
 
+.catraca-device-panel,
+.catraca-empty-state {
+  width: min(100%, 520px);
+  padding: 18px 20px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.catraca-device-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.catraca-device-panel h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.catraca-device-panel p,
+.catraca-empty-state p {
+  margin: 0;
+}
+
+.catraca-device-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.catraca-device-status {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-soft);
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.catraca-device-status.is-online {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.catraca-device-status.is-offline,
+.catraca-device-status.is-manutencao {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.catraca-device-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.catraca-device-grid div {
+  min-width: 0;
+}
+
+.catraca-device-grid dt {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.catraca-device-grid dd {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.catraca-device-warning {
+  color: var(--color-warning);
+  font-weight: 700;
+}
+
 .catraca-input-large {
   width: 100%;
   height: 54px;

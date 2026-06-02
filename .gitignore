@@ -5,7 +5,13 @@ target/
 !**/src/test/**/target/
 
 ### Frontend ###
-frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/coverage/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 ### Logs ###
 *.log

@@ -8,17 +8,23 @@ import {
 import { useApiError } from '../../hooks/useApiError'
 import { acessoService } from '../../services/acessoService'
 import { alunoService } from '../../services/alunoService'
+import { accessDeviceService } from '../../services/accessDeviceService'
+import { accessEventService } from '../../services/accessEventService'
 import { checkinService } from '../../services/checkinService'
 import { HttpError } from '../../services/httpClient'
 import { matriculaService } from '../../services/matriculaService'
 import { pagamentoService } from '../../services/pagamentoService'
-import type { DispositivoAcessoViewModel } from '../../types/accessDevice'
 import type { AcessoResponse } from '../../types/acesso'
 import type { Aluno, StatusAluno } from '../../types/aluno'
 import type { Matricula } from '../../types/matricula'
 import type { Pagamento } from '../../types/pagamento'
 import { CatracaDeviceStatusPanel } from './CatracaDeviceStatusPanel'
 import { CatracaEmptyState } from './CatracaEmptyState'
+import type {
+  DispositivoAcesso,
+  DispositivoAcessoViewModel,
+} from '../../types/accessDevice'
+import type { EventoAcesso } from '../../types/accessEvent'
 
 type CheckinStatus = 'idle' | 'registering' | 'registered' | 'error'
 
@@ -59,12 +65,30 @@ export function CatracaPage() {
   const [alunoId, setAlunoId] = useState('')
   const [result, setResult] = useState<CatracaResult | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
-  const dispositivo: DispositivoAcessoViewModel | null = null
+  const [dispositivos, setDispositivos] = useState<DispositivoAcesso[]>([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null)
+  const [deviceError, setDeviceError] = useState<string | null>(null)
+  const [recentEvents, setRecentEvents] = useState<EventoAcesso[]>([])
+  const [eventsError, setEventsError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<CatracaResult | null>(null)
   const { getErrorMessage } = useApiError()
   const resultKey = result?.key ?? null
   const resultType = result?.type ?? null
+  const dispositivo =
+    dispositivos.find((item) => item.id === selectedDeviceId) ??
+    dispositivos[0] ??
+    null
+  const dispositivoViewModel: DispositivoAcessoViewModel | null = dispositivo
+    ? {
+        ...dispositivo,
+        eventosPendentes: recentEvents.filter(
+          (event) =>
+            event.dispositivoId === dispositivo.id && !event.sincronizado,
+        ).length,
+      }
+    : null
+  const dispositivosOptions = dispositivos.filter((item) => item.id > 0)
 
   const clearResult = useCallback((nextValue = '') => {
     setResult(null)
@@ -80,6 +104,59 @@ export function CatracaPage() {
     const intervalId = window.setInterval(() => setNow(new Date()), 1000)
 
     return () => window.clearInterval(intervalId)
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadDevices() {
+      try {
+        const response = await accessDeviceService.listar()
+
+        if (!mounted) {
+          return
+        }
+
+        setDispositivos(response)
+        setSelectedDeviceId((current) => current ?? response[0]?.id ?? null)
+        setDeviceError(null)
+      } catch {
+        if (mounted) {
+          setDeviceError('Não foi possível carregar os dispositivos de acesso.')
+        }
+      }
+    }
+
+    void loadDevices()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadRecentEvents() {
+      try {
+        const response = await accessEventService.listarHoje()
+
+        if (mounted) {
+          setRecentEvents(response.slice(0, 5))
+          setEventsError(null)
+        }
+      } catch {
+        if (mounted) {
+          setEventsError('Não foi possível carregar os eventos de acesso.')
+        }
+      }
+    }
+
+    void loadRecentEvents()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   useEffect(() => {
@@ -320,7 +397,30 @@ export function CatracaPage() {
       </header>
 
       <main className="catraca-body">
-        <CatracaDeviceStatusPanel dispositivo={dispositivo} />
+        {dispositivosOptions.length > 1 && (
+          <label className="catraca-device-select">
+            <span>Dispositivo da sessão</span>
+            <select
+              value={selectedDeviceId ?? ''}
+              onChange={(event) => setSelectedDeviceId(Number(event.target.value))}
+            >
+              {dispositivosOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {deviceError && (
+          <section className="catraca-device-panel" aria-label="Falha ao carregar dispositivo">
+            <h2>Dispositivo indisponível</h2>
+            <p>{deviceError}</p>
+          </section>
+        )}
+
+        <CatracaDeviceStatusPanel dispositivo={dispositivoViewModel} />
 
         <section className="catraca-input-card" aria-label="Identificação">
           <div className="catraca-input-copy">
@@ -367,8 +467,51 @@ export function CatracaPage() {
         ) : (
           <CatracaEmptyState />
         )}
+
+        <RecentAccessEvents events={recentEvents} error={eventsError} />
       </main>
     </div>
+  )
+}
+
+function RecentAccessEvents({
+  events,
+  error,
+}: {
+  events: EventoAcesso[]
+  error: string | null
+}) {
+  return (
+    <section className="catraca-device-panel" aria-label="Eventos recentes de acesso">
+      <div className="catraca-device-header">
+        <div>
+          <span className="overview-label">Eventos</span>
+          <h2>Acessos de hoje</h2>
+        </div>
+      </div>
+
+      {error && <p className="catraca-device-warning">{error}</p>}
+
+      {!error && events.length === 0 && (
+        <p>Os acessos liberados ou bloqueados aparecerão aqui.</p>
+      )}
+
+      {!error && events.length > 0 && (
+        <div className="catraca-events-list">
+          {events.map((event) => (
+            <article key={event.id} className="catraca-event-item">
+              <div>
+                <strong>{event.alunoNome}</strong>
+                <span>{event.motivo}</span>
+              </div>
+              <span className={`catraca-device-status is-${event.resultado.toLowerCase()}`}>
+                {event.resultadoLabel}
+              </span>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 

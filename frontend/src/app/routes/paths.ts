@@ -9,6 +9,8 @@ export const appPaths = {
   checkins: '/checkins',
   acessos: '/acessos',
   catraca: '/catraca',
+  dispositivosAcesso: '/dispositivos-acesso',
+  eventosAcesso: '/eventos-acesso',
 } as const
 
 export type AppPath = (typeof appPaths)[keyof typeof appPaths]
@@ -23,4 +25,6 @@ export const privatePaths: AppPath[] = [
   appPaths.checkins,
   appPaths.acessos,
   appPaths.catraca,
+  appPaths.dispositivosAcesso,
+  appPaths.eventosAcesso,
 ]

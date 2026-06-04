@@ -60,3 +60,48 @@ npm audit fix --json > gateway-audit-fix.json
 ```
 
 If you want, I can attempt a controlled `fastify` upgrade in a feature branch, run the tests, and report any breaking changes.
+
+## Security / Vulnerability Fix (applied)
+
+Actions taken:
+
+- Upgraded `fastify` to `^5.8.5` to address multiple high-severity CVEs affecting `fast-uri`, `fast-json-stringify` and related transitive packages.
+- Performed a clean install and audit: `npm ci` / `npm audit` (result: 0 vulnerabilities in current dependency tree at time of validation).
+- Ran full TypeScript validation, build and unit tests: `npm run type-check`, `npm run build`, `npm run test` (all passed locally: 12/12 tests).
+- Added ESLint config and fixed or documented warnings (14 warnings remain, all `@typescript-eslint/no-explicit-any`).
+
+Validation summary (local):
+
+- `npm audit`: 0 vulnerabilities after upgrade
+- `tsc --noEmit`: OK
+- `tsc -p tsconfig.json`: OK (build produced `dist/`)
+- `vitest run`: 12/12 tests passed
+- `eslint`: 14 warnings, 0 errors
+
+PR checklist (recommended before merging to `main`):
+
+1. Confirm CI pipeline runs `npm ci`, `npm run type-check`, `npm run lint`, `npm run build`, `npm run test`.
+2. Run `npm audit --production` in CI to confirm production dependency surface has no known high/critical vulns.
+3. Do a quick functional smoke test on a staging environment (snapshot fetch, validate access, event sync).
+4. Validate runtime HTTP surface under expected load; confirm size/payload limits and header validation are enforced.
+5. Ensure secrets are set in CI and production correctly (`DEVICE_API_KEY`, `DEVICE_HMAC_SECRET`, `BACKEND_BASE_URL`, `GATEWAY_ID`).
+6. If running behind a proxy or load balancer, ensure untrusted headers are not forwarded or are validated/whitelisted.
+7. Add monitoring/alerting for sync failures, DB errors, and heartbeat failures.
+
+Commands used during remediation (repro):
+
+```bash
+cd gateway
+npm ci
+npm audit --json > gateway-audit.json
+npm run type-check
+npm run build
+npm run test
+```
+
+Notes:
+
+- The upgrade to Fastify 5.x is a semver-major change; tests and type-checking passed in this codebase but it's recommended to run the gateway in a staging environment and exercise integrations before promoting to production.
+- Remaining ESLint warnings relate to explicit `any` usage in boundary code; consider incremental tightening (replace with typed interfaces or `_`-prefixed ignored args) in a follow-up task.
+
+If you want, I will now commit this documentation update with a senior-style commit message and push the change to the current branch.

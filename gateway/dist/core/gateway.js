@@ -20,6 +20,10 @@ export class GatewayService {
             this.logger.warn({ err }, 'Could not fetch initial snapshot from backend; starting with existing local data');
         }
     }
+    // Public refresh method for administrative trigger
+    async refreshSnapshot() {
+        await this.fetchAndStoreSnapshot();
+    }
     async pendingEventsCount() {
         return this.database.pendingEventsCount();
     }

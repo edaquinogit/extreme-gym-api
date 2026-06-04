@@ -31,11 +31,41 @@ if (config.environment === 'production') {
 
 buildRoutes(app, { gatewayService, adapter, config, logger })
 
+// Scheduler: periodic sync and heartbeat
+let syncInterval: NodeJS.Timeout | null = null
+let heartbeatInterval: NodeJS.Timeout | null = null
+
+function startScheduler() {
+  const syncSec = gatewayService.config.timing.syncIntervalSeconds
+  const hbSec = gatewayService.config.timing.syncIntervalSeconds * 5
+  syncInterval = setInterval(async () => {
+    try {
+      await gatewayService.syncPendingEvents()
+    } catch (err) {
+      logger.warn({ err }, 'Scheduled sync failed')
+    }
+  }, syncSec * 1000)
+
+  heartbeatInterval = setInterval(async () => {
+    try {
+      await gatewayService.sendHeartbeat()
+    } catch (err) {
+      logger.warn({ err }, 'Scheduled heartbeat failed')
+    }
+  }, hbSec * 1000)
+}
+
+function stopScheduler() {
+  if (syncInterval) clearInterval(syncInterval)
+  if (heartbeatInterval) clearInterval(heartbeatInterval)
+}
+
 const start = async () => {
   try {
     await database.initialize()
     await adapter.start()
     await gatewayService.initialize()
+    startScheduler()
     await app.listen({ port: config.gateway.port, host: '0.0.0.0' })
     logger.info({ port: config.gateway.port }, 'Gateway started')
   } catch (error) {
@@ -45,3 +75,19 @@ const start = async () => {
 }
 
 start()
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  logger.info('Shutting down...')
+  stopScheduler()
+  try {
+    await app.close()
+    await adapter.stop()
+    await database.close()
+    process.exit(0)
+  } catch (err) {
+    logger.error({ err }, 'Error during shutdown')
+    process.exit(1)
+  }
+})
+process.on('SIGTERM', () => process.emit('SIGINT'))

@@ -40,6 +40,11 @@ export class GatewayService {
     }
   }
 
+  // Public refresh method for administrative trigger
+  async refreshSnapshot(): Promise<void> {
+    await this.fetchAndStoreSnapshot()
+  }
+
   async pendingEventsCount(): Promise<number> {
     return this.database.pendingEventsCount()
   }

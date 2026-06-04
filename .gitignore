@@ -13,6 +13,14 @@ frontend/.env
 frontend/.env.*
 !frontend/.env.example
 
+### Gateway ###
+gateway/node_modules/
+gateway/dist/
+gateway/coverage/
+gateway/.env
+gateway/.env.*
+!gateway/.env.example
+
 ### Logs ###
 *.log
 logs/

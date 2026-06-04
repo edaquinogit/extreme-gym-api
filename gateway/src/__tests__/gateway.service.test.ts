@@ -5,6 +5,7 @@ process.env.BACKEND_BASE_URL = process.env.BACKEND_BASE_URL ?? 'http://example'
 process.env.DEVICE_ID = process.env.DEVICE_ID ?? 'dev-1'
 process.env.DEVICE_API_KEY = process.env.DEVICE_API_KEY ?? 'k'
 process.env.DEVICE_HMAC_SECRET = process.env.DEVICE_HMAC_SECRET ?? 's'
+process.env.ADMIN_API_KEY = process.env.ADMIN_API_KEY ?? 'admin-k'
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import { SqliteDatabase } from '../storage/db'
@@ -43,6 +44,7 @@ function makeConfig(): GatewayConfig {
     environment: 'test',
     gateway: { id: 'gw-test', name: 'gw', port: 4000, dataPath: ':memory:' },
     backend: { baseUrl: 'http://example', deviceId: 'dev-1', deviceApiKey: 'k', deviceHmacSecret: 's' },
+    admin: { apiKey: 'admin-k' },
     storage: { databasePath: ':memory:' },
     timing: { snapshotRefreshSeconds: 300, snapshotTtlSeconds: 900, syncIntervalSeconds: 60, syncBatchSize: 50 },
     feature: { offlineMode: true, offlineStrict: true },

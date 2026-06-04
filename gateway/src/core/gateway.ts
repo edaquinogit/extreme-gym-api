@@ -291,7 +291,7 @@ export class GatewayService {
       const payload = {
         gatewayId: this.config.gateway.id,
         timestamp: Date.now(),
-        pendingCount: this.pendingEventsCount(),
+        pendingCount: await this.pendingEventsCount(),
       }
       await this.backendClient.sendHeartbeat(payload)
       this.logger.debug('Heartbeat accepted by backend')

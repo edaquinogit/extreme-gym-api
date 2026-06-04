@@ -6,7 +6,7 @@ export async function adminRoutes(app: FastifyInstance, deps: { gatewayService: 
   // simple API key protection
   app.addHook('preHandler', async (request, reply) => {
     const adminKey = request.headers['x-admin-api-key'] as string | undefined
-    if (!adminKey || adminKey !== deps.config.backend.deviceApiKey) {
+    if (!adminKey || adminKey !== deps.config.admin.apiKey) {
       reply.code(401).send({ error: 'unauthorized' })
     }
   })

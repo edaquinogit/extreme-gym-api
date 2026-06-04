@@ -12,7 +12,7 @@ Este diretório contém a base para o gateway local desacoplado de fabricantes, 
 ## Como usar
 
 1. Copie `.env.example` para `.env`.
-2. Configure `BACKEND_BASE_URL`, `DEVICE_ID`, `DEVICE_API_KEY` e `DEVICE_HMAC_SECRET`.
+2. Configure `BACKEND_BASE_URL`, `DEVICE_ID`, `DEVICE_API_KEY`, `DEVICE_HMAC_SECRET` and `ADMIN_API_KEY`.
 3. Execute:
 
 ```bash
@@ -60,6 +60,10 @@ npm audit fix --json > gateway-audit-fix.json
 ```
 
 If you want, I can attempt a controlled `fastify` upgrade in a feature branch, run the tests, and report any breaking changes.
+
+> Operational endpoints are protected by `x-admin-api-key`. Set `ADMIN_API_KEY` in `.env` and never expose it through the public gateway surface.
+>
+> CI now validates the gateway package in the existing workflow with build, lint, type-check, test and production audit stages.
 
 ## Security / Vulnerability Fix (applied)
 

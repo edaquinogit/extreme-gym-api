@@ -12,6 +12,7 @@ const schema = z.object({
   DEVICE_ID: z.string().min(1).default('dev-device'),
   DEVICE_API_KEY: z.string().min(1).default('dev-api-key'),
   DEVICE_HMAC_SECRET: z.string().min(1).default('dev-hmac-secret'),
+  ADMIN_API_KEY: z.string().min(1).default('dev-admin-key'),
   GATEWAY_PORT: z.string().default('4000'),
   SNAPSHOT_REFRESH_INTERVAL_SECONDS: z.string().default('300'),
   SNAPSHOT_TTL_SECONDS: z.string().default('900'),
@@ -37,6 +38,9 @@ export type GatewayConfig = {
     deviceId: string
     deviceApiKey: string
     deviceHmacSecret: string
+  }
+  admin: {
+    apiKey: string
   }
   storage: {
     databasePath: string
@@ -71,6 +75,9 @@ export const config = {
     deviceId: parsed.DEVICE_ID,
     deviceApiKey: parsed.DEVICE_API_KEY,
     deviceHmacSecret: parsed.DEVICE_HMAC_SECRET,
+  },
+  admin: {
+    apiKey: parsed.ADMIN_API_KEY,
   },
   storage: {
     databasePath: parsed.GATEWAY_DATA_PATH,

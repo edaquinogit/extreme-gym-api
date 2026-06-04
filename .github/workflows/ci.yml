@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  install:
+  frontend-install:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,12 +16,12 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
-  lint:
-    needs: install
+  frontend-lint:
+    needs: frontend-install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,15 +30,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
-      - name: Run ESLint
+      - name: Run frontend ESLint
         working-directory: frontend
         run: npm run lint
 
-  type-check:
-    needs: lint
+  frontend-type-check:
+    needs: frontend-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,15 +47,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
-      - name: Type check
+      - name: Frontend type check
         working-directory: frontend
         run: npm run type-check
 
-  build:
-    needs: type-check
+  frontend-build:
+    needs: frontend-type-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,9 +64,107 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
-      - name: Build
+      - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+  gateway-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+
+  gateway-audit:
+    needs: gateway-install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Run gateway production audit
+        working-directory: gateway
+        run: npm audit --production
+
+  gateway-lint:
+    needs: gateway-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Run gateway ESLint
+        working-directory: gateway
+        run: npm run lint
+
+  gateway-type-check:
+    needs: gateway-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Run gateway type check
+        working-directory: gateway
+        run: npm run type-check
+
+  gateway-build:
+    needs: gateway-type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Build gateway
+        working-directory: gateway
+        run: npm run build
+
+  gateway-test:
+    needs: gateway-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Run gateway tests
+        working-directory: gateway
+        run: npm run test

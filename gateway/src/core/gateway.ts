@@ -17,6 +17,38 @@ export type AccessDecision = {
   reason: string
 }
 
+type BackendAccessEvent = {
+  alunoId: number | null
+  dispositivoId: number | string
+  origem: 'GATEWAY'
+  modo: 'ONLINE' | 'OFFLINE'
+  resultado: 'LIBERADO' | 'BLOQUEADO'
+  motivo: string
+  dataHoraEvento: string
+  sincronizado: boolean
+  identificadorExternoEvento: string
+  idempotencyKey: string
+}
+
+function toBackendId(value: string): number | string {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : value
+}
+
+function toOptionalBackendId(value?: string | null): number | null {
+  if (value == null || value === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function toBackendLocalDateTime(epochMillis: number): string {
+  return new Date(epochMillis).toISOString().replace(/Z$/, '')
+}
+
+function toBackendResult(result: LocalAccessEvent['result']): BackendAccessEvent['resultado'] {
+  return result === 'ALLOWED' ? 'LIBERADO' : 'BLOQUEADO'
+}
+
 export class GatewayService {
   public config: GatewayConfig
   private database: SqliteDatabase
@@ -257,17 +289,17 @@ export class GatewayService {
     }
 
     try {
-      const payload = pending.map((e) => ({
-        id: e.id,
+      const payload: BackendAccessEvent[] = pending.map((e) => ({
         idempotencyKey: e.idempotencyKey,
-        alunoId: e.alunoId,
-        deviceId: e.deviceId,
-        credentialType: e.credentialType,
-        externalIdentifier: e.externalIdentifier,
-        mode: e.mode,
-        result: e.result,
-        reason: e.reason,
-        eventTime: e.eventTime,
+        alunoId: toOptionalBackendId(e.alunoId),
+        dispositivoId: toBackendId(this.config.backend.deviceId),
+        origem: 'GATEWAY',
+        modo: e.mode,
+        resultado: toBackendResult(e.result),
+        motivo: e.reason,
+        dataHoraEvento: toBackendLocalDateTime(e.eventTime),
+        sincronizado: true,
+        identificadorExternoEvento: e.id,
       }))
 
       await this.backendClient.syncEventsBatch(payload)
@@ -289,9 +321,7 @@ export class GatewayService {
     this.logger.debug('Sending heartbeat')
     try {
       const payload = {
-        gatewayId: this.config.gateway.id,
-        timestamp: Date.now(),
-        pendingCount: await this.pendingEventsCount(),
+        statusOperacional: 'ONLINE',
       }
       await this.backendClient.sendHeartbeat(payload)
       this.logger.debug('Heartbeat accepted by backend')

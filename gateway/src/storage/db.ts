@@ -2,6 +2,44 @@ import Database from 'better-sqlite3'
 import type { Logger } from 'pino'
 import type { SnapshotItem, LocalAccessEvent } from '../types'
 
+type LocalAccessEventRow = {
+  id: string
+  idempotency_key: string
+  aluno_id?: string | null
+  device_id: string
+  credential_type: string
+  external_identifier: string
+  mode: LocalAccessEvent['mode']
+  result: LocalAccessEvent['result']
+  reason: string
+  event_time: number
+  received_at: number
+  synced: number
+  synced_at?: number | null
+  sync_attempts: number
+  last_sync_error?: string | null
+}
+
+function toLocalAccessEvent(row: LocalAccessEventRow): LocalAccessEvent {
+  return {
+    id: row.id,
+    idempotencyKey: row.idempotency_key,
+    alunoId: row.aluno_id ?? null,
+    deviceId: row.device_id,
+    credentialType: row.credential_type,
+    externalIdentifier: row.external_identifier,
+    mode: row.mode,
+    result: row.result,
+    reason: row.reason,
+    eventTime: row.event_time,
+    receivedAt: row.received_at,
+    synced: row.synced === 1,
+    syncedAt: row.synced_at ?? null,
+    syncAttempts: row.sync_attempts,
+    lastSyncError: row.last_sync_error ?? null,
+  }
+}
+
 export class SqliteDatabase {
   private db?: Database.Database
   private readonly path: string
@@ -65,7 +103,7 @@ export class SqliteDatabase {
     const rows = this.db
       .prepare('SELECT * FROM local_access_events WHERE synced = 0 ORDER BY received_at ASC LIMIT ?')
       .all(limit)
-    return rows as LocalAccessEvent[]
+    return (rows as LocalAccessEventRow[]).map(toLocalAccessEvent)
   }
 
   getSnapshotItem(credentialType: string, externalIdentifier: string): SnapshotItem | null {

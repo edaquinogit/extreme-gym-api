@@ -17,6 +17,8 @@ class FakeBackendClient {
   public snapshot: any[] = []
   public validateResponse: any = null
   public syncCalled = false
+  public syncedEvents: any[] = []
+  public heartbeatPayload: any = null
 
   constructor(public cfg: GatewayConfig) {}
 
@@ -29,12 +31,14 @@ class FakeBackendClient {
     return this.validateResponse
   }
 
-  async sendHeartbeat(_payload: any) {
+  async sendHeartbeat(payload: any) {
+    this.heartbeatPayload = payload
     return { ok: true }
   }
 
-  async syncEventsBatch(_events: any[]) {
+  async syncEventsBatch(events: any[]) {
     this.syncCalled = true
+    this.syncedEvents = events
     return { ok: true }
   }
 }
@@ -43,7 +47,7 @@ function makeConfig(): GatewayConfig {
   return {
     environment: 'test',
     gateway: { id: 'gw-test', name: 'gw', port: 4000, dataPath: ':memory:' },
-    backend: { baseUrl: 'http://example', deviceId: 'dev-1', deviceApiKey: 'k', deviceHmacSecret: 's' },
+    backend: { baseUrl: 'http://example', deviceId: '101', deviceApiKey: 'k', deviceHmacSecret: 's' },
     admin: { apiKey: 'admin-k' },
     storage: { databasePath: ':memory:' },
     timing: { snapshotRefreshSeconds: 300, snapshotTtlSeconds: 900, syncIntervalSeconds: 60, syncBatchSize: 50 },
@@ -116,5 +120,34 @@ describe('GatewayService orchestration (conservative offline)', () => {
     const result = await svc.syncPendingEvents()
     expect(result.synced).toBe(1)
     expect(db.pendingEventsCount()).toBe(0)
+  })
+
+  it('syncPendingEvents maps local events to backend Java DTO fields', async () => {
+    backend.validateResponse = { allowed: false, alunoId: 55, reason: 'blocked by rule' }
+    await svc.validateAccess('CARD', 'to-sync')
+
+    const result = await svc.syncPendingEvents()
+
+    expect(result.synced).toBe(1)
+    expect(backend.syncedEvents).toHaveLength(1)
+    expect(backend.syncedEvents[0]).toMatchObject({
+      alunoId: 55,
+      dispositivoId: 101,
+      origem: 'GATEWAY',
+      modo: 'ONLINE',
+      resultado: 'BLOQUEADO',
+      motivo: 'blocked by rule',
+      sincronizado: true,
+    })
+    expect(backend.syncedEvents[0].dataHoraEvento).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+    expect(backend.syncedEvents[0].identificadorExternoEvento).toBeTruthy()
+    expect(backend.syncedEvents[0].idempotencyKey).toBeTruthy()
+  })
+
+  it('sendHeartbeat uses the backend heartbeat DTO shape', async () => {
+    const result = await svc.sendHeartbeat()
+
+    expect(result).toBe(true)
+    expect(backend.heartbeatPayload).toEqual({ statusOperacional: 'ONLINE' })
   })
 })

@@ -47,7 +47,8 @@ export class BackendClient {
 
   async sendHeartbeat(payload: unknown): Promise<unknown> {
     this.logger.debug('Sending heartbeat to backend')
-    const response = await this.http.post('/dispositivos-acesso/heartbeat', payload, {
+    const deviceId = encodeURIComponent(this.config.backend.deviceId)
+    const response = await this.http.post(`/dispositivos-acesso/${deviceId}/heartbeat`, payload, {
       headers: this.getHeaders(),
     })
     return response.data
@@ -55,7 +56,7 @@ export class BackendClient {
 
   async syncEventsBatch(events: unknown[]): Promise<unknown> {
     this.logger.info({ count: events.length }, 'Syncing events batch')
-    const response = await this.http.post('/eventos-acesso/sincronizar-lote', events, {
+    const response = await this.http.post('/eventos-acesso/sincronizar-lote', { eventos: events }, {
       headers: this.getHeaders(),
     })
     return response.data

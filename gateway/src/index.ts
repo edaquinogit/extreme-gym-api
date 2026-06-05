@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import type { FastifyBaseLogger } from 'fastify'
 import { config } from './config'
 import { buildRoutes } from './routes'
 import { logger } from './logs/logger'
@@ -7,7 +8,7 @@ import { BackendClient } from './backend/client'
 import { GatewayService } from './core/gateway'
 import { MockAccessDeviceAdapter } from './adapters/MockAccessDeviceAdapter'
 
-const app = Fastify({ logger: logger as any })
+const app = Fastify({ loggerInstance: logger as unknown as FastifyBaseLogger })
 const database = new SqliteDatabase(config.storage.databasePath)
 const backendClient = new BackendClient(config, logger)
 const gatewayService = new GatewayService({ config, database, backendClient, logger })

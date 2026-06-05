@@ -12,13 +12,22 @@ import { SqliteDatabase } from '../storage/db'
 import { GatewayService } from '../core/gateway'
 import { logger } from '../logs/logger'
 import type { GatewayConfig } from '../config'
+import type { GatewayBackendClient } from '../core/gateway'
+import type {
+  BackendEventSyncItem,
+  BackendHeartbeatPayload,
+  BackendSnapshotItem,
+  BackendValidateAccessRequest,
+  BackendValidateAccessResponse,
+  SnapshotItem,
+} from '../types'
 
-class FakeBackendClient {
-  public snapshot: any[] = []
-  public validateResponse: any = null
+class FakeBackendClient implements GatewayBackendClient {
+  public snapshot: BackendSnapshotItem[] = []
+  public validateResponse: BackendValidateAccessResponse | Error | null = null
   public syncCalled = false
-  public syncedEvents: any[] = []
-  public heartbeatPayload: any = null
+  public syncedEvents: BackendEventSyncItem[] = []
+  public heartbeatPayload: BackendHeartbeatPayload | null = null
 
   constructor(public cfg: GatewayConfig) {}
 
@@ -26,17 +35,17 @@ class FakeBackendClient {
     return this.snapshot
   }
 
-  async validateOnline(_payload: any) {
+  async validateOnline(_payload: BackendValidateAccessRequest) {
     if (this.validateResponse && this.validateResponse instanceof Error) throw this.validateResponse
     return this.validateResponse
   }
 
-  async sendHeartbeat(payload: any) {
+  async sendHeartbeat(payload: BackendHeartbeatPayload) {
     this.heartbeatPayload = payload
     return { ok: true }
   }
 
-  async syncEventsBatch(events: any[]) {
+  async syncEventsBatch(events: BackendEventSyncItem[]) {
     this.syncCalled = true
     this.syncedEvents = events
     return { ok: true }
@@ -66,7 +75,7 @@ describe('GatewayService orchestration (conservative offline)', () => {
     cfg = makeConfig()
     db = new SqliteDatabase(cfg.storage.databasePath, logger)
     backend = new FakeBackendClient(cfg)
-    svc = new GatewayService({ config: cfg, database: db as any, backendClient: backend as any, logger })
+    svc = new GatewayService({ config: cfg, database: db, backendClient: backend, logger })
     await db.initialize()
   })
 
@@ -104,9 +113,10 @@ describe('GatewayService orchestration (conservative offline)', () => {
 
   it('backend unavailable falls back to offline and allows with valid snapshot', async () => {
     // insert snapshot
-    db.saveSnapshotItems([
+    const snapshots: SnapshotItem[] = [
       { id: 'ss', snapshotVersion: 'v', generatedAt: Date.now(), validUntil: Date.now() + 10000, credentialType: 'CARD', externalIdentifier: 'ok-card', allowed: true, updatedAt: Date.now() },
-    ] as any)
+    ]
+    db.saveSnapshotItems(snapshots)
     backend.validateResponse = new Error('network')
     const res = await svc.validateAccess('CARD', 'ok-card')
     expect(res.allowed).toBe(true)

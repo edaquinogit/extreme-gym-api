@@ -2,6 +2,12 @@ import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { GatewayConfig } from '../config'
 import type { Logger } from 'pino'
+import type {
+  BackendEventSyncItem,
+  BackendEventSyncRequest,
+  BackendHeartbeatPayload,
+  BackendValidateAccessRequest,
+} from '../types'
 
 export class BackendClient {
   private http: AxiosInstance
@@ -37,7 +43,7 @@ export class BackendClient {
     return response.data
   }
 
-  async validateOnline(payload: unknown): Promise<unknown> {
+  async validateOnline(payload: BackendValidateAccessRequest): Promise<unknown> {
     this.logger.debug({ payload }, 'Validating access online')
     const response = await this.http.post('/controle-acesso/validar-dispositivo', payload, {
       headers: this.getHeaders(),
@@ -45,7 +51,7 @@ export class BackendClient {
     return response.data
   }
 
-  async sendHeartbeat(payload: unknown): Promise<unknown> {
+  async sendHeartbeat(payload: BackendHeartbeatPayload): Promise<unknown> {
     this.logger.debug('Sending heartbeat to backend')
     const deviceId = encodeURIComponent(this.config.backend.deviceId)
     const response = await this.http.post(`/dispositivos-acesso/${deviceId}/heartbeat`, payload, {
@@ -54,9 +60,10 @@ export class BackendClient {
     return response.data
   }
 
-  async syncEventsBatch(events: unknown[]): Promise<unknown> {
+  async syncEventsBatch(events: BackendEventSyncItem[]): Promise<unknown> {
     this.logger.info({ count: events.length }, 'Syncing events batch')
-    const response = await this.http.post('/eventos-acesso/sincronizar-lote', { eventos: events }, {
+    const request: BackendEventSyncRequest = { eventos: events }
+    const response = await this.http.post('/eventos-acesso/sincronizar-lote', request, {
       headers: this.getHeaders(),
     })
     return response.data

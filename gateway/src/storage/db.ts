@@ -20,6 +20,10 @@ type LocalAccessEventRow = {
   last_sync_error?: string | null
 }
 
+type CountRow = {
+  count: number
+}
+
 function toLocalAccessEvent(row: LocalAccessEventRow): LocalAccessEvent {
   return {
     id: row.id,
@@ -94,7 +98,7 @@ export class SqliteDatabase {
 
   pendingEventsCount(): number {
     if (!this.db) throw new Error('Database not initialized')
-    const row: any = this.db.prepare('SELECT COUNT(*) as count FROM local_access_events WHERE synced = 0').get()
+    const row = this.db.prepare('SELECT COUNT(*) as count FROM local_access_events WHERE synced = 0').get() as CountRow | undefined
     return row?.count ?? 0
   }
 
@@ -108,10 +112,10 @@ export class SqliteDatabase {
 
   getSnapshotItem(credentialType: string, externalIdentifier: string): SnapshotItem | null {
     if (!this.db) throw new Error('Database not initialized')
-    const row: any = this.db.prepare(
+    const row = this.db.prepare(
       'SELECT * FROM authorized_snapshot WHERE credential_type = ? AND external_identifier = ? LIMIT 1',
-    ).get(credentialType, externalIdentifier)
-    return (row as SnapshotItem) ?? null
+    ).get(credentialType, externalIdentifier) as SnapshotItem | undefined
+    return row ?? null
   }
 
   saveSnapshotItems(items: SnapshotItem[]): void {

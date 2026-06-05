@@ -3,31 +3,26 @@ import type { GatewayConfig } from '../config'
 import type { SqliteDatabase } from '../storage/db'
 import type { BackendClient } from '../backend/client'
 import { randomUUID } from 'crypto'
-import type { LocalAccessEvent } from '../types'
+import type {
+  BackendEventSyncItem,
+  BackendHeartbeatPayload,
+  BackendSnapshotItem,
+  BackendValidateAccessResponse,
+  LocalAccessEvent,
+} from '../types'
+
+export type GatewayBackendClient = Pick<BackendClient, 'fetchSnapshot' | 'validateOnline' | 'sendHeartbeat' | 'syncEventsBatch'>
 
 export type GatewayDependencies = {
   config: GatewayConfig
   database: SqliteDatabase
-  backendClient: BackendClient
+  backendClient: GatewayBackendClient
   logger: Logger
 }
 
 export type AccessDecision = {
   allowed: boolean
   reason: string
-}
-
-type BackendAccessEvent = {
-  alunoId: number | null
-  dispositivoId: number | string
-  origem: 'GATEWAY'
-  modo: 'ONLINE' | 'OFFLINE'
-  resultado: 'LIBERADO' | 'BLOQUEADO'
-  motivo: string
-  dataHoraEvento: string
-  sincronizado: boolean
-  identificadorExternoEvento: string
-  idempotencyKey: string
 }
 
 function toBackendId(value: string): number | string {
@@ -45,14 +40,30 @@ function toBackendLocalDateTime(epochMillis: number): string {
   return new Date(epochMillis).toISOString().replace(/Z$/, '')
 }
 
-function toBackendResult(result: LocalAccessEvent['result']): BackendAccessEvent['resultado'] {
+function toBackendResult(result: LocalAccessEvent['result']): BackendEventSyncItem['resultado'] {
   return result === 'ALLOWED' ? 'LIBERADO' : 'BLOQUEADO'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function toBackendSnapshotItem(value: unknown): BackendSnapshotItem {
+  return isRecord(value) ? value : {}
+}
+
+function toValidateAccessResponse(value: unknown): BackendValidateAccessResponse {
+  return isRecord(value) ? value : {}
+}
+
+function toErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
 }
 
 export class GatewayService {
   public config: GatewayConfig
   private database: SqliteDatabase
-  private backendClient: BackendClient
+  private backendClient: GatewayBackendClient
   private logger: Logger
 
   constructor(deps: GatewayDependencies) {
@@ -90,7 +101,9 @@ export class GatewayService {
     }
 
     // Map backend items to SnapshotItem shape conservatively
-    const items = payload.map((it: any) => ({
+    const items = payload.map((value) => {
+      const it = toBackendSnapshotItem(value)
+      return {
       id: String(it.id ?? randomUUID()),
       snapshotVersion: String(it.snapshotVersion ?? it.version ?? 'unknown'),
       generatedAt: Number(it.generatedAt ?? Date.now()),
@@ -101,7 +114,8 @@ export class GatewayService {
       blockReason: it.blockReason ?? null,
       validUntilAccess: it.validUntilAccess ? Number(it.validUntilAccess) : null,
       updatedAt: Date.now(),
-    }))
+      }
+    })
 
     this.database.saveSnapshotItems(items)
     this.logger.info({ count: items.length }, 'Stored snapshot items locally')
@@ -141,11 +155,11 @@ export class GatewayService {
         idempotencyKey,
       }
       this.logger.debug({ credentialType, externalIdentifier }, 'Attempting online validation')
-      const response: any = await this.backendClient.validateOnline(onlinePayload)
+      const response = toValidateAccessResponse(await this.backendClient.validateOnline(onlinePayload))
 
-      const allowed = !!(response && response.allowed)
-      const alunoId = response?.alunoId ?? null
-      const reason = response?.reason ?? (allowed ? 'ALLOWED by backend' : 'BLOCKED by backend')
+      const allowed = response.allowed === true
+      const alunoId = response.alunoId == null ? null : String(response.alunoId)
+      const reason = response.reason ?? (allowed ? 'ALLOWED by backend' : 'BLOCKED by backend')
 
       const event: LocalAccessEvent = {
         id: randomUUID(),
@@ -289,7 +303,7 @@ export class GatewayService {
     }
 
     try {
-      const payload: BackendAccessEvent[] = pending.map((e) => ({
+      const payload: BackendEventSyncItem[] = pending.map((e) => ({
         idempotencyKey: e.idempotencyKey,
         alunoId: toOptionalBackendId(e.alunoId),
         dispositivoId: toBackendId(this.config.backend.deviceId),
@@ -307,11 +321,11 @@ export class GatewayService {
       this.database.markEventsSynced(ids)
       this.logger.info({ count: ids.length }, 'Successfully synced events')
       return { synced: ids.length, failed: 0 }
-    } catch (err: any) {
+    } catch (err) {
       this.logger.warn({ err }, 'Failed to sync events; will keep them for retry')
       // increment attempt counters for each pending event
       for (const p of pending) {
-        this.database.incrementSyncAttempt(p.id, String(err?.message ?? err))
+        this.database.incrementSyncAttempt(p.id, toErrorMessage(err))
       }
       return { synced: 0, failed: pending.length }
     }
@@ -320,7 +334,7 @@ export class GatewayService {
   async sendHeartbeat(): Promise<boolean> {
     this.logger.debug('Sending heartbeat')
     try {
-      const payload = {
+      const payload: BackendHeartbeatPayload = {
         statusOperacional: 'ONLINE',
       }
       await this.backendClient.sendHeartbeat(payload)

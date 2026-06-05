@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BackendClient } from '../backend/client'
 import type { GatewayConfig } from '../config'
+import type { BackendEventSyncItem, BackendHeartbeatPayload } from '../types'
+import pino from 'pino'
 
 const axiosMock = vi.hoisted(() => ({
   create: vi.fn(),
@@ -27,12 +29,7 @@ function makeConfig(): GatewayConfig {
   }
 }
 
-const logger = {
-  info: vi.fn(),
-  debug: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-}
+const logger = pino({ level: 'silent' })
 
 describe('BackendClient contract with Spring Boot API', () => {
   beforeEach(() => {
@@ -46,8 +43,8 @@ describe('BackendClient contract with Spring Boot API', () => {
   })
 
   it('sends heartbeat to the backend device heartbeat path', async () => {
-    const client = new BackendClient(makeConfig(), logger as any)
-    const payload = { statusOperacional: 'ONLINE' }
+    const client = new BackendClient(makeConfig(), logger)
+    const payload: BackendHeartbeatPayload = { statusOperacional: 'ONLINE' }
 
     await client.sendHeartbeat(payload)
 
@@ -64,8 +61,8 @@ describe('BackendClient contract with Spring Boot API', () => {
   })
 
   it('wraps event sync batch payload in the eventos property', async () => {
-    const client = new BackendClient(makeConfig(), logger as any)
-    const events = [
+    const client = new BackendClient(makeConfig(), logger)
+    const events: BackendEventSyncItem[] = [
       {
         alunoId: 55,
         dispositivoId: 101,

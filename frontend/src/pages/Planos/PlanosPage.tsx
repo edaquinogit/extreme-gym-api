@@ -154,7 +154,7 @@ export function PlanosPage() {
       setPlanos((current) =>
         current.map((item) =>
           item.id === planoToInactivate.id
-            ? { ...item, ativo: false, status: 'INATIVO' }
+            ? { ...item, status: 'INATIVO' }
             : item,
         ),
       )

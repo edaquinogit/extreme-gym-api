@@ -1,13 +1,13 @@
 import Fastify from 'fastify'
-import { config } from './config'
-import { buildRoutes } from './routes'
-import { logger } from './logs/logger'
-import { SqliteDatabase } from './storage/db'
-import { BackendClient } from './backend/client'
-import { GatewayService } from './core/gateway'
-import { MockAccessDeviceAdapter } from './adapters/MockAccessDeviceAdapter'
+import { config } from './config/index.js'
+import { buildRoutes } from './routes/index.js'
+import { logger } from './logs/logger.js'
+import { SqliteDatabase } from './storage/db.js'
+import { BackendClient } from './backend/client.js'
+import { GatewayService } from './core/gateway.js'
+import { MockAccessDeviceAdapter } from './adapters/MockAccessDeviceAdapter.js'
 
-const app = Fastify({ logger: logger as any })
+const app = Fastify({ loggerInstance: logger as any })
 const database = new SqliteDatabase(config.storage.databasePath)
 const backendClient = new BackendClient(config, logger)
 const gatewayService = new GatewayService({ config, database, backendClient, logger })

@@ -210,7 +210,7 @@ export function MatriculasPage() {
           />
         )}
         {!isLoading && !errorMessage && matriculas.length > 0 && (
-          <DataTable headers={['ID', 'Aluno', 'Plano', 'Status', 'Início', 'Fim', 'Ações']}>
+          <DataTable headers={['ID', 'Aluno', 'Plano', 'Status', 'Início', 'Vencimento', 'Ações']}>
             {matriculas.map((matricula) => {
               const isCanceled = matricula.status === 'CANCELADA'
 
@@ -221,7 +221,7 @@ export function MatriculasPage() {
                   <td>{matricula.planoNome ?? matricula.plano?.nome ?? '-'}</td>
                   <td><StatusBadge status={matricula.status} /></td>
                   <td>{formatDate(matricula.dataInicio)}</td>
-                  <td>{formatDate(matricula.dataFim)}</td>
+                  <td>{formatDate(matricula.dataVencimento)}</td>
                   <td>
                     {!isCanceled ? (
                       <button

@@ -20,10 +20,8 @@ export function checkinApiToViewModel(api: CheckinAPI): Checkin {
     alunoId: api.alunoId ?? undefined,
     alunoNome: api.alunoNome ?? undefined,
     matriculaId: api.matriculaId ?? null,
-    permitido: api.permitido ?? false,
     dataHora: api.dataHora ?? '',
     status: permitidoToStatus(api.permitido),
-    motivo: api.motivo ?? undefined,
     motivoBloqueio: api.permitido ? undefined : api.motivo ?? undefined,
   }
 }

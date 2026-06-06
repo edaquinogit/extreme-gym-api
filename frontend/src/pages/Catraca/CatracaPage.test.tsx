@@ -77,10 +77,8 @@ describe('CatracaPage', () => {
       id: 1,
       alunoId: 10,
       alunoNome: 'Ana Silva',
-      permitido: true,
       dataHora: '2026-06-02T10:00:00',
       status: 'AUTORIZADO',
-      motivo: 'Acesso liberado.',
     })
     mockedAccessDeviceService.listar.mockResolvedValue([])
     mockedAccessEventService.listarHoje.mockResolvedValue([])

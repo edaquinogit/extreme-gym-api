@@ -884,7 +884,7 @@ function formatOptionalDateTime(value?: string | null) {
 }
 
 function getMatriculaEndDate(matricula: Matricula) {
-  return matricula.dataFim ?? matricula.dataVencimento
+  return matricula.dataVencimento ?? matricula.dataFim
 }
 
 function getMatriculaPlanoName(matricula: Matricula) {

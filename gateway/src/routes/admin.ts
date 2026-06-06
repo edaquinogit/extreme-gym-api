@@ -5,6 +5,10 @@ import type { GatewayConfig } from '../config'
 export async function adminRoutes(app: FastifyInstance, deps: { gatewayService: GatewayService; config: GatewayConfig }) {
   // simple API key protection
   app.addHook('preHandler', async (request, reply) => {
+    if (!request.url.startsWith('/admin/')) {
+      return
+    }
+
     const adminKey = request.headers['x-admin-api-key'] as string | undefined
     if (!adminKey || adminKey !== deps.config.admin.apiKey) {
       reply.code(401).send({ error: 'unauthorized' })

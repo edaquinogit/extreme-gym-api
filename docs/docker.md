@@ -14,6 +14,7 @@ Nao copie codigo React/Vite para este backend. Se uma pasta `frontend/` aparecer
 - `docker-compose.yml`: stack padrao de desenvolvimento.
 - `docker-compose.dev.yml`: stack explicita de desenvolvimento.
 - `docker-compose.local.yml`: API isolada com H2, util para desenvolvimento rapido.
+- `docker-compose.staging.yml`: stack de staging com PostgreSQL real e profile equivalente a producao.
 - `docker-compose.prod.example.yml`: exemplo de producao, sem expor PostgreSQL no host.
 - `.env.example`: modelo de variaveis, sem segredos reais.
 
@@ -40,6 +41,9 @@ Principais variaveis:
 - `CORS_ALLOWED_ORIGINS`
 - `SPRING_PROFILES_ACTIVE`
 - `SKIP_TESTS`
+- `BACKUP_DIR`
+- `BACKUP_RETENTION_DAYS`
+- `BACKUP_LOG_DIR`
 
 Gere `JWT_SECRET` com:
 
@@ -95,6 +99,33 @@ No exemplo de producao:
 - Swagger/OpenAPI ficam desabilitados pelo profile `prod`;
 - `CORS_ALLOWED_ORIGINS` deve ser definido com o dominio real do frontend;
 - secrets devem vir do orquestrador, secret manager ou pipeline seguro.
+- logs usam driver `local` com rotacao basica para evitar perda imediata em recreate de container e crescimento sem limite.
+
+## Staging
+
+Use `docker-compose.staging.yml` para simular producao com PostgreSQL real:
+
+```bash
+docker compose -f docker-compose.staging.yml config
+docker compose -f docker-compose.staging.yml up -d --build
+```
+
+O staging usa `SPRING_PROFILES_ACTIVE=prod` para exercitar Flyway, secrets obrigatorios, CORS e Swagger desabilitado. Nao use H2 nem profile `dev` para validar go-live.
+
+## Backup PostgreSQL
+
+Os scripts operacionais ficam em `scripts/`:
+
+```bash
+scripts/backup-postgres.sh
+scripts/verify-backup.sh backups/postgres/arquivo.sql.gz
+scripts/restore-postgres.sh backups/postgres/arquivo.sql.gz
+```
+
+Leia os runbooks antes de operar:
+
+- `docs/runbooks/backup-postgres.md`
+- `docs/runbooks/restore-postgres.md`
 
 ## Build da Imagem
 

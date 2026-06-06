@@ -7,7 +7,6 @@ export type Plano = {
   valor: number
   duracaoDias?: number
   status: StatusPlano
-  ativo: boolean
   dataCadastro?: string
 }
 

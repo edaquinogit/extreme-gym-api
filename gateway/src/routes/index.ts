@@ -2,10 +2,10 @@ import type { FastifyInstance } from 'fastify'
 import type { GatewayService } from '../core/gateway'
 import type { Logger } from 'pino'
 import type { GatewayConfig } from '../config'
-import { healthRoutes } from './health'
-import { statusRoutes } from './status'
-import { devRoutes } from './dev'
-import { adminRoutes } from './admin'
+import { healthRoutes } from './health.js'
+import { statusRoutes } from './status.js'
+import { devRoutes } from './dev.js'
+import { adminRoutes } from './admin.js'
 
 export function buildRoutes(app: FastifyInstance, deps: {
   gatewayService: GatewayService

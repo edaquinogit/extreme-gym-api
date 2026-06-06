@@ -3,28 +3,22 @@ package com.extreme.gym.config;
 import com.extreme.gym.entity.Usuario;
 import com.extreme.gym.enums.Role;
 import com.extreme.gym.repository.UsuarioRepository;
-import java.security.SecureRandom;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile("dev | local")
 public class AdminUserInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AdminUserInitializer.class);
-    private static final String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
-    private static final int GENERATED_PASSWORD_LENGTH = 16;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final boolean enabled;
     private final String adminEmail;
     private final String adminUsername;
     private final String adminPassword;
@@ -32,12 +26,14 @@ public class AdminUserInitializer implements CommandLineRunner {
     public AdminUserInitializer(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            @Value("${app.admin.email:admin@extremegym.local}") String adminEmail,
-            @Value("${app.admin.username:admin}") String adminUsername,
+            @Value("${app.bootstrap-admin.enabled:false}") boolean enabled,
+            @Value("${app.admin.email:}") String adminEmail,
+            @Value("${app.admin.username:}") String adminUsername,
             @Value("${app.admin.password:}") String adminPassword
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.enabled = enabled;
         this.adminEmail = adminEmail;
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
@@ -46,42 +42,43 @@ public class AdminUserInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (usuarioRepository.existsByEmail(adminEmail) || usuarioRepository.existsByUsername(adminUsername)) {
+        if (!enabled) {
+            log.debug("Bootstrap de administrador inicial desabilitado.");
             return;
         }
 
-        String passwordToUse = resolveAdminPassword();
+        validateBootstrapConfiguration();
+
+        if (usuarioRepository.existsByRole(Role.ADMIN)) {
+            log.info("Bootstrap de administrador ignorado: ja existe usuario ADMIN.");
+            return;
+        }
+
+        if (usuarioRepository.existsByEmail(adminEmail) || usuarioRepository.existsByUsername(adminUsername)) {
+            log.warn("Bootstrap de administrador ignorado: email ou username ja existe sem role ADMIN.");
+            return;
+        }
+
         Usuario admin = Usuario.builder()
                 .nome("Administrador")
                 .email(adminEmail)
                 .username(adminUsername)
-                .passwordHash(passwordEncoder.encode(passwordToUse))
+                .passwordHash(passwordEncoder.encode(adminPassword))
                 .role(Role.ADMIN)
                 .ativo(true)
                 .build();
 
         usuarioRepository.save(admin);
-
-        if (adminPassword == null || adminPassword.isBlank()) {
-            log.warn("Nenhuma senha administrativa configurada. Usuario '{}' criado com credenciais temporarias. Defina ADMIN_PASSWORD imediatamente.", adminUsername);
-            log.warn("Senha temporaria do admin nao sera exibida em log por seguranca. Reconfigure ADMIN_PASSWORD e recrie o usuario se necessario.");
-            return;
-        }
-
-        log.info("Usuario administrador local criado: email='{}', username='{}'", adminEmail, adminUsername);
+        log.info("Usuario ADMIN inicial criado com username='{}' e email='{}'. Desabilite o bootstrap apos o primeiro uso.", adminUsername, adminEmail);
     }
 
-    private String resolveAdminPassword() {
-        if (adminPassword == null || adminPassword.isBlank()) {
-            return generateSecurePassword();
+    private void validateBootstrapConfiguration() {
+        if (isBlank(adminEmail) || isBlank(adminUsername) || isBlank(adminPassword)) {
+            throw new IllegalStateException("Bootstrap ADMIN habilitado requer app.admin.email, app.admin.username e app.admin.password.");
         }
-        return adminPassword;
     }
 
-    private String generateSecurePassword() {
-        return IntStream.range(0, GENERATED_PASSWORD_LENGTH)
-                .map(i -> PASSWORD_CHARACTERS.charAt(SECURE_RANDOM.nextInt(PASSWORD_CHARACTERS.length())))
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

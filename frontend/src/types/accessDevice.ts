@@ -1,46 +1,20 @@
-export type AccessDeviceStatus = 'ATIVO' | 'INATIVO' | 'MANUTENCAO' | 'OFFLINE'
+export type StatusDispositivoAcesso =
+  | 'ONLINE'
+  | 'OFFLINE'
+  | 'MANUTENCAO'
+  | 'DESCONHECIDO'
 
-export type AccessDeviceType =
-  | 'CATRACA_FACIAL'
-  | 'CATRACA_QR'
-  | 'RECEPCAO'
-  | 'GATEWAY'
-  | 'OUTRO'
+export type ModoOperacaoDispositivo = 'ONLINE' | 'OFFLINE' | 'HIBRIDO'
 
-export type AccessDeviceOperationMode = 'ONLINE' | 'OFFLINE' | 'HIBRIDO'
-
-export type AccessDevice = {
-  id: number
+export type DispositivoAcessoViewModel = {
+  id: string
   nome: string
-  tipo: AccessDeviceType
-  status: AccessDeviceStatus
-  modoOperacao: AccessDeviceOperationMode
-  identificadorExterno: string
-  fabricante: string
-  modelo: string
-  ipLocal: string
-  unidade: string
+  tipo: 'CATRACA' | 'GATEWAY' | 'FACIAL' | 'OUTRO'
+  fabricante: string | null
+  modelo: string | null
+  status: StatusDispositivoAcesso
+  modoOperacao: ModoOperacaoDispositivo
   ultimaComunicacaoEm: string | null
-  criadoEm: string
-  atualizadoEm: string
+  eventosPendentes: number
+  unidade: string
 }
-
-export type AccessDeviceCreatePayload = {
-  nome: string
-  tipo: AccessDeviceType
-  modoOperacao: AccessDeviceOperationMode
-  identificadorExterno?: string
-  fabricante?: string
-  modelo?: string
-  ipLocal?: string
-  unidade?: string
-}
-
-export type AccessDeviceCreated = {
-  dispositivo: AccessDevice
-  apiKeyPlaintext: string
-}
-
-export type DispositivoAcessoViewModel = AccessDevice
-export type StatusDispositivoAcesso = AccessDeviceStatus
-export type ModoOperacaoDispositivo = AccessDeviceOperationMode

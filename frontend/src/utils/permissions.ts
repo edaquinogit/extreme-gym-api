@@ -2,7 +2,7 @@ import type { AuthUser } from '../types/auth'
 
 export type AppRole = 'ADMIN' | 'RECEPCAO' | 'CATRACA'
 
-export function hasRole(user: AuthUser | null, allowedRoles: readonly AppRole[]) {
+export function hasRole(user: AuthUser | null, allowedRoles: AppRole[]) {
   const roles = getUserRoles(user)
 
   return roles.some((role) => allowedRoles.includes(role))

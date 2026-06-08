@@ -16,11 +16,12 @@ export function CatracaDeviceStatusPanel({
       <section className="catraca-device-panel" aria-label="Status da catraca">
         <div>
           <span className="overview-label">Dispositivo</span>
-          <h2>Gateway externo ainda não validado</h2>
+          <h2>Contrato de gateway pendente</h2>
         </div>
-        <p>Nenhum dispositivo de acesso foi retornado pelo backend.</p>
+        <p>Não foi possível consultar o status da catraca.</p>
         <p className="catraca-device-warning">
-          Use a operação manual autorizada até cadastrar e validar o gateway.
+          A validação automática pode estar indisponível. Use a operação manual
+          autorizada.
         </p>
       </section>
     )
@@ -50,18 +51,19 @@ export function CatracaDeviceStatusPanel({
           <dd>{formatLastCommunication(dispositivo.ultimaComunicacaoEm)}</dd>
         </div>
         <div>
-          <dt>Tipo</dt>
-          <dd>{formatDeviceType(dispositivo.tipo)}</dd>
+          <dt>Eventos pendentes</dt>
+          <dd>{dispositivo.eventosPendentes}</dd>
         </div>
         <div>
           <dt>Unidade</dt>
-          <dd>{dispositivo.unidade || 'Unidade não informada'}</dd>
+          <dd>{dispositivo.unidade}</dd>
         </div>
       </dl>
 
-      {(dispositivo.status === 'OFFLINE' || dispositivo.status === 'INATIVO') && (
+      {dispositivo.status === 'OFFLINE' && (
         <p className="catraca-device-warning">
-          Dispositivo sem operação ativa. Use a operação manual autorizada.
+          Catraca offline. A validação automática pode estar indisponível. Use a
+          operação manual autorizada.
         </p>
       )}
     </section>
@@ -70,24 +72,13 @@ export function CatracaDeviceStatusPanel({
 
 function formatDeviceStatus(status: StatusDispositivoAcesso) {
   const labels: Record<StatusDispositivoAcesso, string> = {
-    ATIVO: 'Dispositivo ativo',
-    INATIVO: 'Dispositivo inativo',
+    ONLINE: 'Catraca conectada',
     OFFLINE: 'Catraca offline',
     MANUTENCAO: 'Em manutenção',
+    DESCONHECIDO: 'Status desconhecido',
   }
 
   return labels[status]
-}
-
-function formatDeviceType(type: DispositivoAcessoViewModel['tipo']) {
-  const labels: Record<DispositivoAcessoViewModel['tipo'], string> = {
-    CATRACA_FACIAL: 'Catraca facial',
-    CATRACA_QR: 'Catraca QR',
-    GATEWAY: 'Gateway',
-    OUTRO: 'Outro',
-    RECEPCAO: 'Recepção',
-  }
-  return labels[type]
 }
 
 function formatOperationMode(mode: ModoOperacaoDispositivo) {

@@ -1553,11 +1553,12 @@ h1 {
   font-weight: 800;
 }
 
-.catraca-device-status.is-online {
+.catraca-device-status.is-ativo {
   background: var(--color-success-soft);
   color: var(--color-success);
 }
 
+.catraca-device-status.is-inativo,
 .catraca-device-status.is-offline,
 .catraca-device-status.is-manutencao {
   background: var(--color-warning-soft);
@@ -1590,6 +1591,34 @@ h1 {
 .catraca-device-warning {
   color: var(--color-warning);
   font-weight: 700;
+}
+
+.catraca-recent-events {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.catraca-recent-event {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-soft);
+}
+
+.catraca-recent-event strong,
+.catraca-recent-event span {
+  min-width: 0;
+}
+
+.catraca-recent-event span {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  text-align: right;
 }
 
 .catraca-input-large {
@@ -2453,6 +2482,52 @@ h1 {
   font-size: 0.92rem;
 }
 
+.secret-box {
+  padding: 14px 16px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.credential-manager,
+.credential-form {
+  display: grid;
+  gap: 14px;
+}
+
+.credential-list {
+  display: grid;
+  gap: 10px;
+}
+
+.credential-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.credential-row > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.credential-row span,
+.credential-row small {
+  min-width: 0;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
 .confirm-dialog {
   display: grid;
   gap: 18px;
@@ -2636,5 +2711,10 @@ h1 {
   .page-header-action button {
     width: 100%;
     max-width: none;
+  }
+
+  .credential-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }

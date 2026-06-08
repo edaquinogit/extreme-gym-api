@@ -3,17 +3,22 @@ import { appPaths } from '../../app/routes/paths'
 import { navigateTo, useCurrentPath } from '../../app/routes/router'
 import { ApiStatus } from '../ApiStatus'
 import { useAuth } from '../../hooks/useAuth'
+import { hasRole, type AppRole } from '../../utils/permissions'
 
 const navigationItems = [
-  { compactLabel: 'IN', label: 'Início', path: appPaths.dashboard },
-  { compactLabel: 'AL', label: 'Alunos', path: appPaths.alunos },
-  { compactLabel: 'PL', label: 'Planos', path: appPaths.planos },
-  { compactLabel: 'MA', label: 'Matrículas', path: appPaths.matriculas },
-  { compactLabel: 'PG', label: 'Pagamentos', path: appPaths.pagamentos },
-  { compactLabel: 'CH', label: 'Check-ins', path: appPaths.checkins },
-  { compactLabel: 'AC', label: 'Acesso', path: appPaths.acessos },
-  { compactLabel: 'CA', label: 'Catraca', path: appPaths.catraca },
-]
+  { compactLabel: 'IN', label: 'Início', path: appPaths.dashboard, roles: ['ADMIN', 'RECEPCAO', 'CATRACA'] },
+  { compactLabel: 'AL', label: 'Alunos', path: appPaths.alunos, roles: ['ADMIN', 'RECEPCAO'] },
+  { compactLabel: 'PL', label: 'Planos', path: appPaths.planos, roles: ['ADMIN', 'RECEPCAO'] },
+  { compactLabel: 'MA', label: 'Matrículas', path: appPaths.matriculas, roles: ['ADMIN', 'RECEPCAO'] },
+  { compactLabel: 'PG', label: 'Pagamentos', path: appPaths.pagamentos, roles: ['ADMIN', 'RECEPCAO'] },
+  { compactLabel: 'CH', label: 'Check-ins', path: appPaths.checkins, roles: ['ADMIN', 'RECEPCAO', 'CATRACA'] },
+  { compactLabel: 'AC', label: 'Acesso', path: appPaths.acessos, roles: ['ADMIN', 'RECEPCAO', 'CATRACA'] },
+  { compactLabel: 'DV', label: 'Dispositivos', path: appPaths.dispositivosAcesso, roles: ['ADMIN'] },
+  { compactLabel: 'EV', label: 'Eventos', path: appPaths.eventosAcesso, roles: ['ADMIN', 'RECEPCAO'] },
+  { compactLabel: 'CA', label: 'Catraca', path: appPaths.catraca, roles: ['ADMIN', 'RECEPCAO', 'CATRACA'] },
+] as const
+
+type NavigationItem = (typeof navigationItems)[number] & { roles: readonly AppRole[] }
 
 type AdminLayoutProps = {
   children: ReactNode
@@ -24,6 +29,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const currentPath = useCurrentPath()
   const { logout, user } = useAuth()
+  const visibleNavigationItems = navigationItems.filter((item: NavigationItem) =>
+    hasRole(user, item.roles),
+  )
 
   function handleNavigate(path: string) {
     navigateTo(path)
@@ -50,7 +58,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     .filter(Boolean)
     .join(' ')
 
-  const currentNavItem = navigationItems.find((i) => i.path === currentPath)
+  const currentNavItem = visibleNavigationItems.find((i) => i.path === currentPath)
 
   return (
     <div className={`admin-layout ${isSidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
@@ -93,7 +101,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         <nav className="sidebar-nav" aria-label="Navegação principal">
-          {navigationItems.map((item) => {
+          {visibleNavigationItems.map((item) => {
             const isActive = currentPath === item.path
             return (
               <button
@@ -148,7 +156,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="header-user">
             <label className="global-search" aria-label="Busca global visual">
               <span aria-hidden="true">⌕</span>
-              <input placeholder="Buscar aluno, matrícula ou pagamento" type="search" />
+              <input disabled placeholder="Busca global pendente" type="search" />
             </label>
 
             <ApiStatus />

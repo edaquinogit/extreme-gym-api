@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CatracaPage } from './CatracaPage'
 import { acessoService } from '../../services/acessoService'
+import { accessDeviceService } from '../../services/accessDeviceService'
+import { accessEventService } from '../../services/accessEventService'
 import { alunoService } from '../../services/alunoService'
 import { checkinService } from '../../services/checkinService'
 import { matriculaService } from '../../services/matriculaService'
@@ -11,6 +13,18 @@ import { HttpError } from '../../services/httpClient'
 vi.mock('../../services/acessoService', () => ({
   acessoService: {
     validar: vi.fn(),
+  },
+}))
+
+vi.mock('../../services/accessDeviceService', () => ({
+  accessDeviceService: {
+    listar: vi.fn(),
+  },
+}))
+
+vi.mock('../../services/accessEventService', () => ({
+  accessEventService: {
+    listar: vi.fn(),
   },
 }))
 
@@ -39,6 +53,8 @@ vi.mock('../../services/pagamentoService', () => ({
 }))
 
 const mockedAcessoService = vi.mocked(acessoService)
+const mockedAccessDeviceService = vi.mocked(accessDeviceService)
+const mockedAccessEventService = vi.mocked(accessEventService)
 const mockedAlunoService = vi.mocked(alunoService)
 const mockedCheckinService = vi.mocked(checkinService)
 const mockedMatriculaService = vi.mocked(matriculaService)
@@ -47,6 +63,8 @@ const mockedPagamentoService = vi.mocked(pagamentoService)
 describe('CatracaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockedAccessDeviceService.listar.mockResolvedValue([])
+    mockedAccessEventService.listar.mockResolvedValue([])
     mockedAlunoService.buscar.mockResolvedValue({
       id: 10,
       nome: 'Ana Silva',
@@ -68,18 +86,65 @@ describe('CatracaPage', () => {
     })
   })
 
-  it('renders initial operational state without fake device telemetry', () => {
+  it('renders initial operational state without fake device telemetry', async () => {
     render(<CatracaPage />)
 
     expect(screen.getByText('Controle de Acesso')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Identificação do aluno' })).toBeInTheDocument()
     expect(screen.getByLabelText('ID do aluno')).toHaveFocus()
-    expect(screen.getByText('Contrato de gateway pendente')).toBeInTheDocument()
-    expect(screen.getByText('Não foi possível consultar o status da catraca.')).toBeInTheDocument()
+    expect(await screen.findByText('Gateway externo ainda não validado')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum dispositivo de acesso foi retornado pelo backend.')).toBeInTheDocument()
     expect(screen.getByText('Aguardando validação de acesso.')).toBeInTheDocument()
     expect(screen.getByText('Use a busca manual quando a identificação automática não estiver disponível.')).toBeInTheDocument()
-    expect(screen.getByText('Nenhum acesso registrado hoje.')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum evento de acesso retornado pelo backend.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Verificar acesso' })).toBeDisabled()
+    expect(mockedAccessDeviceService.listar).toHaveBeenCalled()
+    expect(mockedAccessEventService.listar).toHaveBeenCalled()
+  })
+
+  it('renders runtime device and recent events returned by human JWT endpoints', async () => {
+    mockedAccessDeviceService.listar.mockResolvedValue([
+      {
+        id: 3,
+        nome: 'Gateway recepção',
+        tipo: 'GATEWAY',
+        status: 'ATIVO',
+        modoOperacao: 'HIBRIDO',
+        identificadorExterno: 'gw-rec',
+        fabricante: 'Extreme',
+        modelo: 'EG-1',
+        ipLocal: '10.0.0.5',
+        unidade: 'Centro',
+        ultimaComunicacaoEm: '2026-06-07T10:00:00',
+        criadoEm: '2026-06-07T09:00:00',
+        atualizadoEm: '2026-06-07T10:00:00',
+      },
+    ])
+    mockedAccessEventService.listar.mockResolvedValue([
+      {
+        id: 9,
+        alunoId: 10,
+        alunoNome: 'Ana Silva',
+        dispositivoId: 3,
+        dispositivoNome: 'Gateway recepção',
+        matriculaId: 5,
+        origem: 'GATEWAY',
+        modo: 'ONLINE',
+        resultado: 'LIBERADO',
+        motivo: 'Matrícula ativa.',
+        dataHoraEvento: '2026-06-07T10:01:00',
+        dataHoraRecebimento: '2026-06-07T10:01:01',
+        sincronizado: true,
+        identificadorExternoEvento: 'evt-9',
+        criadoEm: '2026-06-07T10:01:01',
+      },
+    ])
+
+    render(<CatracaPage />)
+
+    expect(await screen.findByText('Gateway recepção')).toBeInTheDocument()
+    expect(screen.getByText('Dispositivo ativo')).toBeInTheDocument()
+    expect(screen.getByText('Ana Silva')).toBeInTheDocument()
   })
 
   it('shows loading while access validation is pending', async () => {

@@ -8,6 +8,8 @@ export const appPaths = {
   pagamentos: '/pagamentos',
   checkins: '/checkins',
   acessos: '/acessos',
+  dispositivosAcesso: '/dispositivos-acesso',
+  eventosAcesso: '/eventos-acesso',
   catraca: '/catraca',
 } as const
 
@@ -22,5 +24,7 @@ export const privatePaths: AppPath[] = [
   appPaths.pagamentos,
   appPaths.checkins,
   appPaths.acessos,
+  appPaths.dispositivosAcesso,
+  appPaths.eventosAcesso,
   appPaths.catraca,
 ]

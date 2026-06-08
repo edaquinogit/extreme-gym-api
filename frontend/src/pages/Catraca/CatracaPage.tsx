@@ -7,12 +7,15 @@ import {
 } from 'react'
 import { useApiError } from '../../hooks/useApiError'
 import { acessoService } from '../../services/acessoService'
+import { accessDeviceService } from '../../services/accessDeviceService'
+import { accessEventService } from '../../services/accessEventService'
 import { alunoService } from '../../services/alunoService'
 import { checkinService } from '../../services/checkinService'
 import { HttpError } from '../../services/httpClient'
 import { matriculaService } from '../../services/matriculaService'
 import { pagamentoService } from '../../services/pagamentoService'
 import type { DispositivoAcessoViewModel } from '../../types/accessDevice'
+import type { AccessEvent } from '../../types/accessEvent'
 import type { AcessoResponse } from '../../types/acesso'
 import type { Aluno, StatusAluno } from '../../types/aluno'
 import type { Matricula } from '../../types/matricula'
@@ -59,7 +62,8 @@ export function CatracaPage() {
   const [alunoId, setAlunoId] = useState('')
   const [result, setResult] = useState<CatracaResult | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
-  const dispositivo: DispositivoAcessoViewModel | null = null
+  const [dispositivo, setDispositivo] = useState<DispositivoAcessoViewModel | null>(null)
+  const [eventosRecentes, setEventosRecentes] = useState<AccessEvent[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<CatracaResult | null>(null)
   const { getErrorMessage } = useApiError()
@@ -80,6 +84,35 @@ export function CatracaPage() {
     const intervalId = window.setInterval(() => setNow(new Date()), 1000)
 
     return () => window.clearInterval(intervalId)
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadAccessRuntimeData() {
+      const [deviceResult, eventResult] = await Promise.allSettled([
+        accessDeviceService.listar(),
+        accessEventService.listar(),
+      ])
+
+      if (!isMounted) {
+        return
+      }
+
+      if (deviceResult.status === 'fulfilled') {
+        setDispositivo(selectRuntimeDevice(deviceResult.value))
+      }
+
+      if (eventResult.status === 'fulfilled') {
+        setEventosRecentes(eventResult.value)
+      }
+    }
+
+    void loadAccessRuntimeData()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   useEffect(() => {
@@ -365,10 +398,19 @@ export function CatracaPage() {
             }}
           />
         ) : (
-          <CatracaEmptyState />
+          <CatracaEmptyState eventosRecentes={eventosRecentes} />
         )}
       </main>
     </div>
+  )
+}
+
+function selectRuntimeDevice(devices: DispositivoAcessoViewModel[]) {
+  return (
+    devices.find((device) => device.status === 'ATIVO') ??
+    devices.find((device) => device.status !== 'INATIVO') ??
+    devices[0] ??
+    null
   )
 }
 

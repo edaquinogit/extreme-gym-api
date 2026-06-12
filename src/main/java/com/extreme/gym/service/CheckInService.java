@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,18 +42,16 @@ public class CheckInService {
 
     @Transactional(readOnly = true)
     public List<CheckInResponseDTO> listar(Pageable pageable) {
-        return checkInRepository.findAll(pageable)
-                .getContent()
-                .stream()
+        Page<CheckIn> page = checkInRepository.findAll(pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<CheckInResponseDTO> listarPorAluno(Long alunoId, Pageable pageable) {
-        return checkInRepository.findByAlunoId(alunoId, pageable)
-                .getContent()
-                .stream()
+        Page<CheckIn> page = checkInRepository.findByAlunoId(alunoId, pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }

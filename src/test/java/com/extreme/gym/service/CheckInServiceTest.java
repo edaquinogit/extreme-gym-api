@@ -285,14 +285,15 @@ class CheckInServiceTest {
     }
 
     private Aluno criarAluno(Long id, StatusAluno status) {
-        return Aluno.builder()
+        Aluno aluno = Aluno.builder()
                 .id(id)
                 .nome("Ana Silva")
                 .email("ana.silva@email.com")
                 .telefone("71999990000")
                 .status(status)
-                .dataCadastro(LocalDateTime.now(clock))
                 .build();
+        aluno.setCriadoEm(LocalDateTime.now(clock));
+        return aluno;
     }
 
     private Matricula criarMatricula(Long id, Aluno aluno, LocalDate dataFim) {

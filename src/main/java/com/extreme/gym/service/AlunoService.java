@@ -10,8 +10,10 @@ import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +33,15 @@ public class AlunoService {
         return toResponseDTO(alunoRepository.save(aluno));
     }
 
+    @Transactional(readOnly = true)
     public List<AlunoResponseDTO> listar(Pageable pageable) {
-        return alunoRepository.findAll(pageable)
-                .getContent()
-                .stream()
+        Page<Aluno> page = alunoRepository.findAll(pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public AlunoResponseDTO buscarPorId(Long id) {
         return toResponseDTO(buscarEntidadePorId(id));
     }
@@ -92,7 +95,7 @@ public class AlunoService {
                 aluno.getEmail(),
                 aluno.getTelefone(),
                 aluno.getStatus(),
-                aluno.getDataCadastro()
+                aluno.getCriadoEm()
         );
     }
 }

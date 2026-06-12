@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +23,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,9 +50,6 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean ativo = true;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
-
     @PrePersist
     void prePersist() {
         if (role == null) {
@@ -61,9 +57,6 @@ public class Usuario {
         }
         if (ativo == null) {
             ativo = true;
-        }
-        if (dataCadastro == null) {
-            dataCadastro = LocalDateTime.now();
         }
     }
 }

@@ -93,6 +93,8 @@ Quando todas as regras passam, o acesso e liberado. Quando alguma regra falha, a
 
 ## Comandos de build por repositorio
 
+> Fonte oficial: este repositorio e somente o backend. Sempre suba e altere o frontend pelo repositorio separado `../extreme-gym-web` (`https://github.com/edaquinogit/extreme-gym-web.git`). Nao use a pasta `frontend/` deste repositorio como fonte de verdade do front.
+
 Este repositorio e o backend Java/Spring Boot. Por isso, o build da API deve ser executado com Maven:
 
 ```bash
@@ -109,6 +111,7 @@ https://github.com/edaquinogit/extreme-gym-web.git
 Para buildar ou rodar o frontend, execute os comandos dentro do repositorio `extreme-gym-web`:
 
 ```bash
+cd ../extreme-gym-web
 npm run build
 npm run dev
 ```

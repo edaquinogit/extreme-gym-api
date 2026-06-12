@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,18 +52,16 @@ public class PagamentoService {
 
     @Transactional(readOnly = true)
     public List<PagamentoResponseDTO> listar(Pageable pageable) {
-        return pagamentoRepository.findAll(pageable)
-                .getContent()
-                .stream()
+        Page<Pagamento> page = pagamentoRepository.findAll(pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<PagamentoResponseDTO> listarPorMatricula(Long matriculaId, Pageable pageable) {
-        return pagamentoRepository.findByMatriculaId(matriculaId, pageable)
-                .getContent()
-                .stream()
+        Page<Pagamento> page = pagamentoRepository.findByMatriculaId(matriculaId, pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }

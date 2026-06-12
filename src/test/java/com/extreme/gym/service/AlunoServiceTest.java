@@ -48,7 +48,7 @@ class AlunoServiceTest {
         when(alunoRepository.save(any(Aluno.class))).thenAnswer(invocation -> {
             Aluno aluno = invocation.getArgument(0);
             aluno.setId(1L);
-            aluno.setDataCadastro(dataCadastro);
+            aluno.setCriadoEm(dataCadastro);
             return aluno;
         });
 
@@ -93,7 +93,7 @@ class AlunoServiceTest {
         assertThat(response.email()).isEqualTo(aluno.getEmail());
         assertThat(response.telefone()).isEqualTo(aluno.getTelefone());
         assertThat(response.status()).isEqualTo(StatusAluno.ATIVO);
-        assertThat(response.dataCadastro()).isEqualTo(aluno.getDataCadastro());
+        assertThat(response.dataCadastro()).isEqualTo(aluno.getCriadoEm());
     }
 
     @Test
@@ -214,13 +214,14 @@ class AlunoServiceTest {
     }
 
     private Aluno criarAluno(Long id, String nome, String email, String telefone) {
-        return Aluno.builder()
+        Aluno aluno = Aluno.builder()
                 .id(id)
                 .nome(nome)
                 .email(email)
                 .telefone(telefone)
                 .status(StatusAluno.ATIVO)
-                .dataCadastro(LocalDateTime.now())
                 .build();
+        aluno.setCriadoEm(LocalDateTime.now());
+        return aluno;
     }
 }

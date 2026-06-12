@@ -52,7 +52,10 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmailOrUsername(request.login())
+        // Normaliza o login para evitar falhas case-sensitive no PostgreSQL.
+        String login = request.login().trim().toLowerCase();
+
+        Usuario usuario = usuarioRepository.findByEmailOrUsername(login)
                 .filter(Usuario::getAtivo)
                 .orElseThrow(() -> new BadCredentialsException("Credenciais invalidas"));
 

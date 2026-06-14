@@ -63,6 +63,13 @@ public class MatriculaService {
         return toResponseDTO(buscarEntidadePorId(id));
     }
 
+    @Transactional(readOnly = true)
+    public List<MatriculaResponseDTO> listarPorAluno(Long alunoId, Pageable pageable) {
+        return matriculaRepository.findByAlunoId(alunoId, pageable).stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     public MatriculaResponseDTO cancelar(Long id) {
         Matricula matricula = buscarEntidadePorId(id);
         matricula.setStatus(StatusMatricula.CANCELADA);

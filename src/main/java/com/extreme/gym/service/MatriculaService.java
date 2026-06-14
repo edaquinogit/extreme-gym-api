@@ -77,6 +77,16 @@ public class MatriculaService {
         return toResponseDTO(matriculaRepository.save(matricula));
     }
 
+    public MatriculaResponseDTO reativar(Long id) {
+        Matricula matricula = buscarEntidadePorId(id);
+        if (matricula.getStatus() == StatusMatricula.ATIVA) {
+            throw new BusinessException("Matricula ja esta ativa");
+        }
+        validarAlunoSemMatriculaAtiva(matricula.getAluno().getId());
+        matricula.setStatus(StatusMatricula.ATIVA);
+        return toResponseDTO(matriculaRepository.save(matricula));
+    }
+
     private Aluno buscarAlunoPorId(Long id) {
         return alunoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno nao encontrado com id: " + id));

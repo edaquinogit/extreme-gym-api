@@ -1,15 +1,20 @@
 package com.extreme.gym.service;
 
+import com.extreme.gym.dto.controleacesso.CapturaFaceRequestDTO;
 import com.extreme.gym.dto.controleacesso.SnapshotAutorizadoItemDTO;
 import com.extreme.gym.dto.controleacesso.SnapshotAutorizadosResponseDTO;
 import com.extreme.gym.dto.controleacesso.ValidarDispositivoRequestDTO;
 import com.extreme.gym.dto.controleacesso.ValidarDispositivoResponseDTO;
+import com.extreme.gym.dto.credencial.CredencialAcessoResponseDTO;
 import com.extreme.gym.entity.CredencialAcesso;
 import com.extreme.gym.entity.DispositivoAcesso;
 import com.extreme.gym.entity.EventoAcesso;
 import com.extreme.gym.enums.ResultadoAcesso;
 import com.extreme.gym.enums.StatusCredencialAcesso;
+import com.extreme.gym.enums.TipoCredencialAcesso;
+import com.extreme.gym.exception.BusinessException;
 import com.extreme.gym.exception.ResourceNotFoundException;
+import com.extreme.gym.repository.AlunoRepository;
 import com.extreme.gym.repository.CredencialAcessoRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ControleAcessoService {
 
     private final CredencialAcessoRepository credencialRepository;
+    private final AlunoRepository alunoRepository;
     private final AcessoService acessoService;
     private final DeviceApiKeyAuthenticator deviceApiKeyAuthenticator;
     private final EventoAcessoService eventoAcessoService;
@@ -144,6 +150,48 @@ public class ControleAcessoService {
                 validacao.aluno().getNome(),
                 evento.getId(),
                 evento.getDataHoraEvento()
+        );
+    }
+
+    public CredencialAcessoResponseDTO capturarFace(DispositivoAcesso dispositivo, CapturaFaceRequestDTO request) {
+        deviceApiKeyAuthenticator.ensureAutomaticAccessAllowed(dispositivo);
+
+        if (!alunoRepository.existsById(request.alunoId())) {
+            throw new ResourceNotFoundException("Aluno nao encontrado com id: " + request.alunoId());
+        }
+
+        String template = request.faceTemplate();
+        if (template.toLowerCase().startsWith("data:image") || template.length() > 512) {
+            throw new BusinessException("Face template deve ser uma referencia externa valida");
+        }
+
+        if (credencialRepository.existsByTipoAndIdentificadorExterno(TipoCredencialAcesso.FACE_TEMPLATE, template)) {
+            throw new BusinessException("Template facial ja registrado no sistema");
+        }
+
+        CredencialAcesso credencial = CredencialAcesso.builder()
+                .alunoId(request.alunoId())
+                .tipo(TipoCredencialAcesso.FACE_TEMPLATE)
+                .identificadorExterno(template)
+                .fornecedor("DISPOSITIVO_" + dispositivo.getId())
+                .status(StatusCredencialAcesso.ATIVA)
+                .build();
+
+        CredencialAcesso salva = credencialRepository.save(credencial);
+
+        return new CredencialAcessoResponseDTO(
+                salva.getId(),
+                salva.getAlunoId(),
+                salva.getTipo(),
+                salva.getIdentificadorExterno(),
+                salva.getFornecedor(),
+                salva.getStatus(),
+                salva.getCadastradoEm(),
+                salva.getRevogadoEm(),
+                salva.getTermoAceitoEm(),
+                salva.getVersaoTermo(),
+                salva.getCriadoEm(),
+                salva.getAtualizadoEm()
         );
     }
 

@@ -62,4 +62,9 @@ public class MatriculaController {
     public ResponseEntity<MatriculaResponseDTO> cancelar(@PathVariable Long id) {
         return ResponseEntity.ok(matriculaService.cancelar(id));
     }
+
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<MatriculaResponseDTO> reativar(@PathVariable Long id) {
+        return ResponseEntity.ok(matriculaService.reativar(id));
+    }
 }

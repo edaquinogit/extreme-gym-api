@@ -13,9 +13,17 @@ public interface CredencialAcessoRepository extends JpaRepository<CredencialAces
 
     List<CredencialAcesso> findByStatus(StatusCredencialAcesso status);
 
+    List<CredencialAcesso> findByAlunoIdAndStatus(Long alunoId, StatusCredencialAcesso status);
+
     Optional<CredencialAcesso> findByTipoAndIdentificadorExterno(
             TipoCredencialAcesso tipo,
             String identificadorExterno
+    );
+
+    Optional<CredencialAcesso> findByAlunoIdAndTipoAndStatus(
+            Long alunoId,
+            TipoCredencialAcesso tipo,
+            StatusCredencialAcesso status
     );
 
     boolean existsByTipoAndIdentificadorExterno(TipoCredencialAcesso tipo, String identificadorExterno);

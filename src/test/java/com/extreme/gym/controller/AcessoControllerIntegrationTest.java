@@ -1,6 +1,7 @@
 package com.extreme.gym.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,8 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.extreme.gym.entity.Aluno;
 import com.extreme.gym.entity.Matricula;
 import com.extreme.gym.enums.StatusAluno;
+import com.extreme.gym.enums.StatusCredencialAcesso;
+import com.extreme.gym.enums.TipoCredencialAcesso;
 import com.extreme.gym.repository.AlunoRepository;
 import com.extreme.gym.repository.CheckInRepository;
+import com.extreme.gym.repository.CredencialAcessoRepository;
+import com.extreme.gym.repository.EventoAcessoRepository;
 import com.extreme.gym.repository.MatriculaRepository;
 import com.extreme.gym.repository.PagamentoRepository;
 import com.extreme.gym.repository.PlanoRepository;
@@ -39,6 +44,12 @@ class AcessoControllerIntegrationTest {
     private CheckInRepository checkInRepository;
 
     @Autowired
+    private EventoAcessoRepository eventoAcessoRepository;
+
+    @Autowired
+    private CredencialAcessoRepository credencialAcessoRepository;
+
+    @Autowired
     private PagamentoRepository pagamentoRepository;
 
     @Autowired
@@ -53,6 +64,8 @@ class AcessoControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         checkInRepository.deleteAll();
+        eventoAcessoRepository.deleteAll();
+        credencialAcessoRepository.deleteAll();
         pagamentoRepository.deleteAll();
         matriculaRepository.deleteAll();
         alunoRepository.deleteAll();
@@ -222,6 +235,69 @@ class AcessoControllerIntegrationTest {
         assertThat(checkInRepository.count()).isZero();
     }
 
+    @Test
+    void deveValidarPinAssistidoSemRetornarCredencial() throws Exception {
+        Long alunoId = criarAluno("Ana Silva", "ana.silva@email.com", "11999999999");
+        String pin = buscarPinAtivo(alunoId);
+
+        mockMvc.perform(post("/acessos/assistido/validar-pin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "alunoId": %d,
+                                  "pin": "%s"
+                                }
+                                """.formatted(alunoId, pin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alunoId").value(alunoId))
+                .andExpect(jsonPath("$.alunoNome").value("Ana Silva"))
+                .andExpect(jsonPath("$.valido").value(true))
+                .andExpect(jsonPath("$.identificadorExterno").doesNotExist());
+    }
+
+    @Test
+    void deveRetornarFichaAgregadaSemExporPin() throws Exception {
+        Long matriculaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
+        Long alunoId = buscarAlunoIdPorMatricula(matriculaId);
+        criarPagamento(matriculaId, "99.90", "PIX");
+
+        mockMvc.perform(get("/acessos/alunos/{alunoId}/ficha", alunoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.aluno.id").value(alunoId))
+                .andExpect(jsonPath("$.matriculaAtiva.id").value(matriculaId))
+                .andExpect(jsonPath("$.ultimoPagamento.status").value("PAGO"))
+                .andExpect(jsonPath("$.credenciaisAtivas[0].tipo").value("PIN"))
+                .andExpect(jsonPath("$.credenciaisAtivas[0].identificadorExterno").doesNotExist())
+                .andExpect(jsonPath("$.restricoes").isArray())
+                .andExpect(jsonPath("$.acoesPermitidas").isArray());
+    }
+
+    @Test
+    void deveRegistrarLiberacaoManualComEventoECheckin() throws Exception {
+        Long matriculaId = criarMatriculaValida("Ana Silva", "ana.silva@email.com", "Plano Mensal");
+        Long alunoId = buscarAlunoIdPorMatricula(matriculaId);
+
+        mockMvc.perform(post("/acessos/liberacao-manual")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "alunoId": %d,
+                                  "motivo": "Pagamento confirmado na recepcao",
+                                  "observacao": "Comprovante apresentado",
+                                  "registrarCheckin": true
+                                }
+                                """.formatted(alunoId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alunoId").value(alunoId))
+                .andExpect(jsonPath("$.alunoNome").value("Ana Silva"))
+                .andExpect(jsonPath("$.acessoLiberado").value(true))
+                .andExpect(jsonPath("$.matriculaId").value(matriculaId))
+                .andExpect(jsonPath("$.motivo").value("Pagamento confirmado na recepcao - Comprovante apresentado"));
+
+        assertThat(eventoAcessoRepository.count()).isEqualTo(1);
+        assertThat(checkInRepository.count()).isEqualTo(1);
+    }
+
     private Long criarMatriculaValida(String alunoNome, String alunoEmail, String planoNome) throws Exception {
         Long alunoId = criarAluno(alunoNome, alunoEmail, "11999999999");
         Long planoId = criarPlano(planoNome, "Acesso por 30 dias", "99.90", 30);
@@ -291,6 +367,15 @@ class AcessoControllerIntegrationTest {
 
         Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
         return id.longValue();
+    }
+
+    private String buscarPinAtivo(Long alunoId) {
+        return credencialAcessoRepository.findByAlunoId(alunoId).stream()
+                .filter(credencial -> credencial.getTipo() == TipoCredencialAcesso.PIN)
+                .filter(credencial -> credencial.getStatus() == StatusCredencialAcesso.ATIVA)
+                .findFirst()
+                .orElseThrow()
+                .getIdentificadorExterno();
     }
 
     private String acessoJson(Long alunoId) {

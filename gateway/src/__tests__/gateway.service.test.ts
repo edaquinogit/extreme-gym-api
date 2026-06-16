@@ -14,8 +14,9 @@ import { logger } from '../logs/logger'
 import type { GatewayConfig } from '../config'
 
 class FakeBackendClient {
-  public snapshot: any[] = []
+  public snapshot: any = { itens: [] }
   public validateResponse: any = null
+  public lastValidatePayload: any = null
   public syncCalled = false
   public syncedEvents: any[] = []
   public heartbeatPayload: any = null
@@ -26,7 +27,8 @@ class FakeBackendClient {
     return this.snapshot
   }
 
-  async validateOnline(_payload: any) {
+  async validateOnline(payload: any) {
+    this.lastValidatePayload = payload
     if (this.validateResponse && this.validateResponse instanceof Error) throw this.validateResponse
     return this.validateResponse
   }
@@ -46,7 +48,7 @@ class FakeBackendClient {
 function makeConfig(): GatewayConfig {
   return {
     environment: 'test',
-    gateway: { id: 'gw-test', name: 'gw', port: 4000, dataPath: ':memory:' },
+    gateway: { id: 'gw-test', name: 'gw', version: '0.1.0', port: 4000, dataPath: ':memory:' },
     backend: { baseUrl: 'http://example', deviceId: '101', deviceApiKey: 'k', deviceHmacSecret: 's' },
     admin: { apiKey: 'admin-k' },
     storage: { databasePath: ':memory:' },
@@ -71,17 +73,46 @@ describe('GatewayService orchestration (conservative offline)', () => {
   })
 
   it('saves snapshot fetched from backend on initialize', async () => {
-    backend.snapshot = [
-      { id: 's1', snapshotVersion: 'v1', generatedAt: Date.now(), validUntil: Date.now() + 10000, credentialType: 'CARD', externalIdentifier: 'abc', allowed: true },
-    ]
+    backend.snapshot = {
+      versaoSnapshot: 'v1',
+      geradoEm: new Date().toISOString(),
+      validoAte: null,
+      totalCredenciais: 1,
+      totalLiberados: 1,
+      totalBloqueados: 0,
+      itens: [
+        {
+          alunoId: 1,
+          credencialTipo: 'CARTAO',
+          identificadorExterno: 'abc',
+          liberado: true,
+          motivoBloqueio: null,
+          validoAte: new Date(Date.now() + 10000).toISOString(),
+          atualizadoEm: new Date().toISOString(),
+        },
+      ],
+    }
     await svc.initialize()
-    const item = db.getSnapshotItem('CARD', 'abc')
+    const item = db.getSnapshotItem('CARTAO', 'abc')
     expect(item).not.toBeNull()
     expect(item?.allowed).toBeTruthy()
   })
 
+  it('online validation sends the backend validar-dispositivo DTO shape', async () => {
+    backend.validateResponse = { permitido: true, alunoId: 'al1', motivo: 'ok' }
+    await svc.validateAccess('CARD', 'online-ok')
+
+    expect(backend.lastValidatePayload).toMatchObject({
+      credencialTipo: 'CARTAO',
+      identificadorExterno: 'online-ok',
+      origem: 'GATEWAY',
+    })
+    expect(backend.lastValidatePayload.idempotencyKey).toBeTruthy()
+    expect(backend.lastValidatePayload.dataHoraEvento).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+  })
+
   it('online validation allowed persists ONLINE event', async () => {
-    backend.validateResponse = { allowed: true, alunoId: 'al1', reason: 'ok' }
+    backend.validateResponse = { permitido: true, alunoId: 'al1', motivo: 'ok' }
     const res = await svc.validateAccess('CARD', 'online-ok')
     expect(res.allowed).toBe(true)
     // pending events should be 1
@@ -89,7 +120,7 @@ describe('GatewayService orchestration (conservative offline)', () => {
   })
 
   it('online validation blocked persists ONLINE blocked event', async () => {
-    backend.validateResponse = { allowed: false, reason: 'blocked' }
+    backend.validateResponse = { permitido: false, motivo: 'blocked' }
     const res = await svc.validateAccess('CARD', 'online-block')
     expect(res.allowed).toBe(false)
     expect(db.pendingEventsCount()).toBe(1)
@@ -103,9 +134,9 @@ describe('GatewayService orchestration (conservative offline)', () => {
   })
 
   it('backend unavailable falls back to offline and allows with valid snapshot', async () => {
-    // insert snapshot
+    // insert snapshot using the same normalized vocabulary fetchAndStoreSnapshot would store
     db.saveSnapshotItems([
-      { id: 'ss', snapshotVersion: 'v', generatedAt: Date.now(), validUntil: Date.now() + 10000, credentialType: 'CARD', externalIdentifier: 'ok-card', allowed: true, updatedAt: Date.now() },
+      { id: 'ss', snapshotVersion: 'v', generatedAt: Date.now(), validUntil: Date.now() + 10000, credentialType: 'CARTAO', externalIdentifier: 'ok-card', allowed: true, updatedAt: Date.now() },
     ] as any)
     backend.validateResponse = new Error('network')
     const res = await svc.validateAccess('CARD', 'ok-card')
@@ -123,7 +154,7 @@ describe('GatewayService orchestration (conservative offline)', () => {
   })
 
   it('syncPendingEvents maps local events to backend Java DTO fields', async () => {
-    backend.validateResponse = { allowed: false, alunoId: 55, reason: 'blocked by rule' }
+    backend.validateResponse = { permitido: false, alunoId: 55, motivo: 'blocked by rule' }
     await svc.validateAccess('CARD', 'to-sync')
 
     const result = await svc.syncPendingEvents()
@@ -132,12 +163,12 @@ describe('GatewayService orchestration (conservative offline)', () => {
     expect(backend.syncedEvents).toHaveLength(1)
     expect(backend.syncedEvents[0]).toMatchObject({
       alunoId: 55,
-      dispositivoId: 101,
+      credencialTipo: 'CARTAO',
+      identificadorExterno: 'to-sync',
       origem: 'GATEWAY',
       modo: 'ONLINE',
       resultado: 'BLOQUEADO',
       motivo: 'blocked by rule',
-      sincronizado: true,
     })
     expect(backend.syncedEvents[0].dataHoraEvento).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     expect(backend.syncedEvents[0].identificadorExternoEvento).toBeTruthy()
@@ -148,6 +179,13 @@ describe('GatewayService orchestration (conservative offline)', () => {
     const result = await svc.sendHeartbeat()
 
     expect(result).toBe(true)
-    expect(backend.heartbeatPayload).toEqual({ statusOperacional: 'ONLINE' })
+    expect(backend.heartbeatPayload).toMatchObject({
+      gatewayId: 'gw-test',
+      status: 'ATIVO',
+      modoOperacao: 'HIBRIDO',
+      pendingEvents: 0,
+      version: '0.1.0',
+    })
+    expect(backend.heartbeatPayload.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
   })
 })

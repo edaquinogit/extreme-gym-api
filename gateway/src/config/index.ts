@@ -8,6 +8,7 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   GATEWAY_ID: z.string().min(1).default('dev-gateway'),
   GATEWAY_NAME: z.string().min(1).default('dev-gateway'),
+  GATEWAY_VERSION: z.string().min(1).default('0.1.0'),
   BACKEND_BASE_URL: z.string().url().default('http://localhost'),
   DEVICE_ID: z.string().min(1).default('dev-device'),
   DEVICE_API_KEY: z.string().min(1).default('dev-api-key'),
@@ -30,6 +31,7 @@ export type GatewayConfig = {
   gateway: {
     id: string
     name: string
+    version: string
     port: number
     dataPath: string
   }
@@ -67,6 +69,7 @@ export const config = {
   gateway: {
     id: parsed.GATEWAY_ID,
     name: parsed.GATEWAY_NAME,
+    version: parsed.GATEWAY_VERSION,
     port: Number(parsed.GATEWAY_PORT),
     dataPath: parsed.GATEWAY_DATA_PATH,
   },

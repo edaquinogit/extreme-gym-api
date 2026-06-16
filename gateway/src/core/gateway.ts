@@ -17,22 +17,19 @@ export type AccessDecision = {
   reason: string
 }
 
+type BackendCredencialTipo = 'FACE_TEMPLATE' | 'QR_CODE' | 'CARTAO' | 'PIN'
+
 type BackendAccessEvent = {
+  idempotencyKey: string
   alunoId: number | null
-  dispositivoId: number | string
-  origem: 'GATEWAY'
-  modo: 'ONLINE' | 'OFFLINE'
+  credencialTipo: BackendCredencialTipo
+  identificadorExterno: string
   resultado: 'LIBERADO' | 'BLOQUEADO'
   motivo: string
+  modo: 'ONLINE' | 'OFFLINE'
+  origem: 'GATEWAY'
   dataHoraEvento: string
-  sincronizado: boolean
   identificadorExternoEvento: string
-  idempotencyKey: string
-}
-
-function toBackendId(value: string): number | string {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : value
 }
 
 function toOptionalBackendId(value?: string | null): number | null {
@@ -47,6 +44,28 @@ function toBackendLocalDateTime(epochMillis: number): string {
 
 function toBackendResult(result: LocalAccessEvent['result']): BackendAccessEvent['resultado'] {
   return result === 'ALLOWED' ? 'LIBERADO' : 'BLOQUEADO'
+}
+
+const CREDENCIAL_TIPO_ALIASES: Record<string, BackendCredencialTipo> = {
+  FACE_TEMPLATE: 'FACE_TEMPLATE',
+  FACE: 'FACE_TEMPLATE',
+  FACE_ID: 'FACE_TEMPLATE',
+  QR_CODE: 'QR_CODE',
+  QR: 'QR_CODE',
+  QRCODE: 'QR_CODE',
+  CARTAO: 'CARTAO',
+  CARD: 'CARTAO',
+  RFID: 'CARTAO',
+  PIN: 'PIN',
+}
+
+function toBackendCredencialTipo(credentialType: string, logger: Logger): BackendCredencialTipo {
+  const normalized = CREDENCIAL_TIPO_ALIASES[credentialType.toUpperCase()]
+  if (!normalized) {
+    logger.warn({ credentialType }, 'Unknown credentialType; defaulting to CARTAO for backend sync')
+    return 'CARTAO'
+  }
+  return normalized
 }
 
 export class GatewayService {
@@ -83,24 +102,30 @@ export class GatewayService {
 
   private async fetchAndStoreSnapshot(): Promise<void> {
     this.logger.info('Fetching snapshot from backend')
-    const payload = await this.backendClient.fetchSnapshot()
-    if (!Array.isArray(payload)) {
+    const payload: any = await this.backendClient.fetchSnapshot()
+    const itens = payload?.itens
+    if (!Array.isArray(itens)) {
       this.logger.warn({ payload }, 'Snapshot payload unexpected shape; aborting snapshot store')
       return
     }
 
-    // Map backend items to SnapshotItem shape conservatively
-    const items = payload.map((it: any) => ({
-      id: String(it.id ?? randomUUID()),
-      snapshotVersion: String(it.snapshotVersion ?? it.version ?? 'unknown'),
-      generatedAt: Number(it.generatedAt ?? Date.now()),
-      validUntil: it.validUntil ? Number(it.validUntil) : null,
-      credentialType: String(it.credentialType ?? it.type ?? 'UNKNOWN'),
-      externalIdentifier: String(it.externalIdentifier ?? it.key ?? ''),
-      allowed: !!it.allowed,
-      blockReason: it.blockReason ?? null,
-      validUntilAccess: it.validUntilAccess ? Number(it.validUntilAccess) : null,
-      updatedAt: Date.now(),
+    const snapshotVersion = String(payload.versaoSnapshot ?? 'unknown')
+    const generatedAt = payload.geradoEm ? Date.parse(payload.geradoEm) : Date.now()
+
+    // Map backend items (PT field names) to the gateway's local SnapshotItem shape.
+    // id is derived from (credencialTipo, identificadorExterno) — the actual lookup key —
+    // so an aluno with more than one credential doesn't collide into a single row.
+    const items = itens.map((it: any) => ({
+      id: `${it.credencialTipo ?? 'UNKNOWN'}:${it.identificadorExterno ?? randomUUID()}`,
+      snapshotVersion,
+      generatedAt,
+      validUntil: it.validoAte ? Date.parse(it.validoAte) : null,
+      credentialType: String(it.credencialTipo ?? 'UNKNOWN'),
+      externalIdentifier: String(it.identificadorExterno ?? ''),
+      allowed: !!it.liberado,
+      blockReason: it.motivoBloqueio ?? null,
+      validUntilAccess: it.validoAte ? Date.parse(it.validoAte) : null,
+      updatedAt: it.atualizadoEm ? Date.parse(it.atualizadoEm) : Date.now(),
     }))
 
     this.database.saveSnapshotItems(items)
@@ -119,8 +144,12 @@ export class GatewayService {
     }
   }
 
-  async validateAccess(credentialType: string, externalIdentifier: string): Promise<AccessDecision> {
-    this.logger.info({ credentialType, externalIdentifier }, 'Evaluating access request')
+  async validateAccess(rawCredentialType: string, externalIdentifier: string): Promise<AccessDecision> {
+    this.logger.info({ credentialType: rawCredentialType, externalIdentifier }, 'Evaluating access request')
+
+    // Normalize once to the backend's vocabulary so the snapshot lookup below (populated
+    // from the backend's own credencialTipo values) and the online/sync payloads all agree.
+    const credentialType = toBackendCredencialTipo(rawCredentialType, this.logger)
 
     const idempotencyKey = randomUUID()
     const baseEvent: Omit<LocalAccessEvent, 'id' | 'idempotencyKey' | 'result' | 'reason' | 'mode' | 'synced' | 'syncedAt' | 'syncAttempts' | 'lastSyncError'> = {
@@ -135,17 +164,18 @@ export class GatewayService {
     // Try online validation first
     try {
       const onlinePayload = {
-        credentialType,
-        externalIdentifier,
-        deviceId: this.config.backend.deviceId,
+        credencialTipo: credentialType,
+        identificadorExterno: externalIdentifier,
+        origem: 'GATEWAY',
         idempotencyKey,
+        dataHoraEvento: toBackendLocalDateTime(Date.now()),
       }
       this.logger.debug({ credentialType, externalIdentifier }, 'Attempting online validation')
       const response: any = await this.backendClient.validateOnline(onlinePayload)
 
-      const allowed = !!(response && response.allowed)
+      const allowed = !!(response && response.permitido)
       const alunoId = response?.alunoId ?? null
-      const reason = response?.reason ?? (allowed ? 'ALLOWED by backend' : 'BLOCKED by backend')
+      const reason = response?.motivo ?? (allowed ? 'ALLOWED by backend' : 'BLOCKED by backend')
 
       const event: LocalAccessEvent = {
         id: randomUUID(),
@@ -292,13 +322,13 @@ export class GatewayService {
       const payload: BackendAccessEvent[] = pending.map((e) => ({
         idempotencyKey: e.idempotencyKey,
         alunoId: toOptionalBackendId(e.alunoId),
-        dispositivoId: toBackendId(this.config.backend.deviceId),
-        origem: 'GATEWAY',
-        modo: e.mode,
+        credencialTipo: toBackendCredencialTipo(e.credentialType, this.logger),
+        identificadorExterno: e.externalIdentifier,
         resultado: toBackendResult(e.result),
         motivo: e.reason,
+        modo: e.mode,
+        origem: 'GATEWAY',
         dataHoraEvento: toBackendLocalDateTime(e.eventTime),
-        sincronizado: true,
         identificadorExternoEvento: e.id,
       }))
 
@@ -321,7 +351,12 @@ export class GatewayService {
     this.logger.debug('Sending heartbeat')
     try {
       const payload = {
-        statusOperacional: 'ONLINE',
+        gatewayId: this.config.gateway.id,
+        timestamp: toBackendLocalDateTime(Date.now()),
+        status: 'ATIVO',
+        modoOperacao: this.config.feature.offlineMode ? 'HIBRIDO' : 'ONLINE',
+        pendingEvents: this.database.pendingEventsCount(),
+        version: this.config.gateway.version,
       }
       await this.backendClient.sendHeartbeat(payload)
       this.logger.debug('Heartbeat accepted by backend')

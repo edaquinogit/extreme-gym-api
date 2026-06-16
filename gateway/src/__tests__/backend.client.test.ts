@@ -17,7 +17,7 @@ vi.mock('axios', () => ({
 function makeConfig(): GatewayConfig {
   return {
     environment: 'test',
-    gateway: { id: 'gw-test', name: 'gw', port: 4000, dataPath: ':memory:' },
+    gateway: { id: 'gw-test', name: 'gw', version: '0.1.0', port: 4000, dataPath: ':memory:' },
     backend: { baseUrl: 'http://backend.test', deviceId: '101', deviceApiKey: 'k', deviceHmacSecret: 's' },
     admin: { apiKey: 'admin-k' },
     storage: { databasePath: ':memory:' },
@@ -47,7 +47,14 @@ describe('BackendClient contract with Spring Boot API', () => {
 
   it('sends heartbeat to the backend device heartbeat path', async () => {
     const client = new BackendClient(makeConfig(), logger as any)
-    const payload = { statusOperacional: 'ONLINE' }
+    const payload = {
+      gatewayId: 'gw-test',
+      timestamp: '2026-06-04T12:00:00.000',
+      status: 'ATIVO',
+      modoOperacao: 'HIBRIDO',
+      pendingEvents: 0,
+      version: '0.1.0',
+    }
 
     await client.sendHeartbeat(payload)
 
@@ -68,13 +75,13 @@ describe('BackendClient contract with Spring Boot API', () => {
     const events = [
       {
         alunoId: 55,
-        dispositivoId: 101,
+        credencialTipo: 'CARTAO',
+        identificadorExterno: 'card-123',
         origem: 'GATEWAY',
         modo: 'ONLINE',
         resultado: 'LIBERADO',
         motivo: 'ok',
         dataHoraEvento: '2026-06-04T12:00:00.000',
-        sincronizado: true,
         identificadorExternoEvento: 'event-1',
         idempotencyKey: 'idem-1',
       },

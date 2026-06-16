@@ -18,6 +18,9 @@
   - Substituição de senhas administrativas estáticas nos profiles locais por um mecanismo de geração dinâmica no startup (`AdminUserInitializer`), gerando senhas aleatórias fortes no console caso nenhuma senha seja explicitada.
   - Redução de segurança do registro público de usuários (`app.auth.registration-enabled=false`) por default nas configurações locais.
   - Aumento da segurança de senhas no registro de novos usuários (`RegisterRequest.java`), exigindo um mínimo de 12 caracteres.
+  - Normalização de email/username (lowercase + trim) no login e registro, evitando duplicidade de contas por diferença de capitalização.
+  - Verificação do usuário ativo a cada requisição autenticada no `JwtAuthenticationFilter` (busca por id, com `SecurityContextHolder.clearContext()` antes de autenticar), garantindo que tokens de usuários desativados deixem de funcionar imediatamente.
+  - Rate limiting de tentativas de login (`LoginAttemptService` / `LoginRateLimitException`), com bloqueio temporário configurável via `AUTH_MAX_FAILED_ATTEMPTS` e `AUTH_LOCK_DURATION_MINUTES`.
 - **Paginação Global**:
   - Limite máximo global configurado (`spring.data.web.pageable.max-page-size=100`) nas propriedades do Spring Data Web para mitigar vulnerabilidades DoS por sobrecarga de memória.
 - **Logs de Testes**:
@@ -28,3 +31,14 @@
 - O profile `test` continua usando H2 com `spring.jpa.hibernate.ddl-auto=create-drop` e `spring.flyway.enabled=false`.
 - O repositório de alunos foi modificado para sobrescrever o método `deleteAll()` com uma query SQL nativa, garantindo que o banco de dados em memória seja totalmente limpo entre os testes de integração (ignorando os filtros de `@Where` que antes causavam vazamento de estados e falha por constraint de email único).
 - As constraints parciais de concorrência são específicas de PostgreSQL e ficam garantidas pela migration versionada. A suíte cobre a presença desses índices na migration e mantém testes de serviço para tratamento amigável de violações de integridade.
+
+## Ainda pendente
+
+Itens identificados na auditoria que continuam sem tratamento e devem entrar em ciclos futuros:
+
+- **Paginação obrigatória**: apenas 5 dos 8 controllers usam `Pageable`; o limite global de `max-page-size` mitiga o pior caso, mas listagens sem paginação real continuam custosas em bases grandes.
+- **Soft delete de Matrícula**: hoje só `Aluno` tem `@SQLDelete`/`@Where`; cancelamentos de matrícula ainda fazem update direto de status sem o mesmo guard-rail de exclusão lógica transparente.
+- **Revogação de tokens (token versioning/blacklist)**: não há mecanismo para invalidar um JWT já emitido antes do seu `expiration` natural (ex.: logout forçado, comprometimento de conta).
+- **Regras de renovação de matrícula**: a expiração/renovação automática de matrículas vencidas não é protegida/automatizada além do fluxo manual de cancelar/reativar.
+- **Modelagem financeira**: descontos e pagamentos parciais ainda não têm auditoria/proteção reforçada contra manipulação.
+- **Secrets management**: `JWT_SECRET`, senha do admin e credenciais de banco são externalizados via variável de ambiente, mas sem um cofre dedicado (Vault, AWS Secrets Manager) em produção.

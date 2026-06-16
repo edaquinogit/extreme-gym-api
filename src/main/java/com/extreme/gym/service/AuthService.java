@@ -33,14 +33,17 @@ public class AuthService {
         if (!registrationEnabled) {
             throw new BusinessException("Registro publico de usuarios esta desabilitado");
         }
-        if (usuarioRepository.existsByEmail(request.email())) {
+
+        String emailNormalizado = request.email().toLowerCase().trim();
+
+        if (usuarioRepository.existsByEmail(emailNormalizado)) {
             throw new BusinessException("Usuario ja cadastrado com este email");
         }
 
         Usuario usuario = Usuario.builder()
                 .nome(request.nome())
-                .email(request.email())
-                .username(request.email())
+                .email(emailNormalizado)
+                .username(emailNormalizado)
                 .passwordHash(passwordEncoder.encode(request.senha()))
                 .role(Role.RECEPCAO)
                 .ativo(true)
@@ -52,7 +55,9 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmailOrUsername(request.login())
+        String loginNormalizado = request.login().toLowerCase().trim();
+        
+        Usuario usuario = usuarioRepository.findByEmailOrUsername(loginNormalizado)
                 .filter(Usuario::getAtivo)
                 .orElseThrow(() -> new BadCredentialsException("Credenciais invalidas"));
 

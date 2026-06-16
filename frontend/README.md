@@ -1,4 +1,8 @@
-# Extreme Gym Web
+# Extreme Gym Web (copia nao oficial)
+
+> Atencao: o frontend oficial da Extreme Gym fica no repositorio separado `../extreme-gym-web` (`https://github.com/edaquinogit/extreme-gym-web.git`).
+>
+> Para subir ou alterar o front, use sempre `../extreme-gym-web`. Esta pasta dentro do backend nao deve ser tratada como fonte oficial.
 
 Frontend administrativo da Extreme Gym, preparado para consumir a Extreme Gym API em Spring Boot.
 

@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +27,7 @@ import org.hibernate.annotations.Where;
 @Table(name = "alunos")
 @SQLDelete(sql = "UPDATE alunos SET status = 'INATIVO' WHERE id = ?")
 @Where(clause = "status <> 'INATIVO'")
-public class Aluno {
+public class Aluno extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,16 +47,10 @@ public class Aluno {
     @Column(nullable = false)
     private StatusAluno status = StatusAluno.ATIVO;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
-
     @PrePersist
     void prePersist() {
         if (status == null) {
             status = StatusAluno.ATIVO;
-        }
-        if (dataCadastro == null) {
-            dataCadastro = LocalDateTime.now();
         }
     }
 }

@@ -56,6 +56,14 @@ public class SecurityConfig {
                         auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").hasRole("ADMIN");
                     }
                     auth.requestMatchers("/usuarios/**").hasRole("ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/dispositivos-acesso/*/heartbeat").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/controle-acesso/snapshot-autorizados").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/controle-acesso/validar-dispositivo").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/eventos-acesso/sincronizar-lote").permitAll();
+                    auth.requestMatchers("/dispositivos-acesso/**").hasRole("ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/eventos-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/alunos/*/credenciais-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/credenciais-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
                     auth.requestMatchers(HttpMethod.GET, "/alunos/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
                     auth.requestMatchers("/alunos/**").hasAnyRole("ADMIN", "RECEPCAO");
                     auth.requestMatchers("/planos/**").hasAnyRole("ADMIN", "RECEPCAO");
@@ -64,6 +72,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
                     auth.requestMatchers("/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
                     auth.requestMatchers("/acessos/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.requestMatchers("/busca-global/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR", "CATRACA");
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,6 +35,7 @@ class AdminUserInitializerTest {
         AdminUserInitializer initializer = new AdminUserInitializer(
                 usuarioRepository,
                 passwordEncoder,
+                true,
                 "admin@extremegym.com",
                 "admin",
                 "admin123"
@@ -48,5 +50,60 @@ class AdminUserInitializerTest {
         assertEquals(Role.ADMIN, admin.getRole());
         assertNotEquals("admin123", admin.getPasswordHash());
         assertTrue(passwordEncoder.matches("admin123", admin.getPasswordHash()));
+    }
+
+    @Test
+    void naoDeveCriarAdminQuandoBootstrapEstiverDesabilitado() throws Exception {
+        AdminUserInitializer initializer = new AdminUserInitializer(
+                usuarioRepository,
+                passwordEncoder,
+                false,
+                "admin@extremegym.com",
+                "admin",
+                "admin123"
+        );
+
+        initializer.run();
+
+        assertEquals(0, usuarioRepository.count());
+    }
+
+    @Test
+    void naoDeveDuplicarQuandoJaExistirAdminComOutroLogin() throws Exception {
+        usuarioRepository.save(Usuario.builder()
+                .nome("Admin Existente")
+                .email("admin-existente@extremegym.com")
+                .username("admin-existente")
+                .passwordHash(passwordEncoder.encode("senha-segura"))
+                .role(Role.ADMIN)
+                .ativo(true)
+                .build());
+
+        AdminUserInitializer initializer = new AdminUserInitializer(
+                usuarioRepository,
+                passwordEncoder,
+                true,
+                "novo-admin@extremegym.com",
+                "novo-admin",
+                "admin123"
+        );
+
+        initializer.run();
+
+        assertEquals(1, usuarioRepository.count());
+    }
+
+    @Test
+    void deveFalharSeBootstrapHabilitadoSemSenha() {
+        AdminUserInitializer initializer = new AdminUserInitializer(
+                usuarioRepository,
+                passwordEncoder,
+                true,
+                "admin@extremegym.com",
+                "admin",
+                ""
+        );
+
+        assertThrows(IllegalStateException.class, initializer::run);
     }
 }

@@ -291,14 +291,15 @@ class PagamentoServiceTest {
     }
 
     private Aluno criarAluno(Long id) {
-        return Aluno.builder()
+        Aluno aluno = Aluno.builder()
                 .id(id)
                 .nome("Ana Silva")
                 .email("ana.silva@email.com")
                 .telefone("71999990000")
                 .status(StatusAluno.ATIVO)
-                .dataCadastro(LocalDateTime.now(clock))
                 .build();
+        aluno.setCriadoEm(LocalDateTime.now(clock));
+        return aluno;
     }
 
     private Plano criarPlano(Long id) {

@@ -4,21 +4,30 @@ import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.dto.aluno.AlunoResponseDTO;
 import com.extreme.gym.dto.aluno.AlunoStatusUpdateDTO;
 import com.extreme.gym.entity.Aluno;
+import com.extreme.gym.entity.CredencialAcesso;
 import com.extreme.gym.enums.StatusAluno;
+import com.extreme.gym.enums.StatusCredencialAcesso;
+import com.extreme.gym.enums.TipoCredencialAcesso;
 import com.extreme.gym.exception.BusinessException;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
+import com.extreme.gym.repository.CredencialAcessoRepository;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class AlunoService {
 
     private final AlunoRepository alunoRepository;
+    private final CredencialAcessoRepository credencialRepository;
 
+    @Transactional
     public AlunoResponseDTO cadastrar(AlunoRequestDTO request) {
         validarEmailDuplicado(request.email());
 
@@ -28,17 +37,30 @@ public class AlunoService {
                 .telefone(request.telefone())
                 .build();
 
-        return toResponseDTO(alunoRepository.save(aluno));
+        Aluno salvo = alunoRepository.save(aluno);
+
+        CredencialAcesso pin = CredencialAcesso.builder()
+                .alunoId(salvo.getId())
+                .tipo(TipoCredencialAcesso.PIN)
+                .identificadorExterno(gerarPinUnico())
+                .fornecedor("SISTEMA")
+                .status(StatusCredencialAcesso.ATIVA)
+                .build();
+
+        credencialRepository.save(pin);
+
+        return toResponseDTO(salvo);
     }
 
+    @Transactional(readOnly = true)
     public List<AlunoResponseDTO> listar(Pageable pageable) {
-        return alunoRepository.findAll(pageable)
-                .getContent()
-                .stream()
+        Page<Aluno> page = alunoRepository.findAll(pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public AlunoResponseDTO buscarPorId(Long id) {
         return toResponseDTO(buscarEntidadePorId(id));
     }
@@ -68,6 +90,16 @@ public class AlunoService {
         alunoRepository.save(aluno);
     }
 
+    private String gerarPinUnico() {
+        for (int tentativa = 0; tentativa < 10; tentativa++) {
+            String pin = String.format("%06d", ThreadLocalRandom.current().nextInt(0, 1_000_000));
+            if (!credencialRepository.existsByTipoAndIdentificadorExterno(TipoCredencialAcesso.PIN, pin)) {
+                return pin;
+            }
+        }
+        throw new BusinessException("Nao foi possivel gerar PIN unico para o aluno");
+    }
+
     private void validarEmailDuplicado(String email) {
         if (alunoRepository.existsByEmail(email)) {
             throw new BusinessException("Ja existe aluno cadastrado com este email");
@@ -92,7 +124,7 @@ public class AlunoService {
                 aluno.getEmail(),
                 aluno.getTelefone(),
                 aluno.getStatus(),
-                aluno.getDataCadastro()
+                aluno.getCriadoEm()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.extreme.gym.repository;
 
 import com.extreme.gym.entity.Usuario;
+import com.extreme.gym.enums.Role;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+
+    boolean existsByRole(Role role);
 }

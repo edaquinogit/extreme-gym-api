@@ -50,8 +50,21 @@ public class MatriculaController {
         return ResponseEntity.ok(matriculaService.buscarPorId(id));
     }
 
+    @GetMapping("/aluno/{alunoId}")
+    public ResponseEntity<List<MatriculaResponseDTO>> listarPorAluno(
+            @PathVariable Long alunoId,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(matriculaService.listarPorAluno(alunoId, pageable));
+    }
+
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<MatriculaResponseDTO> cancelar(@PathVariable Long id) {
         return ResponseEntity.ok(matriculaService.cancelar(id));
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<MatriculaResponseDTO> reativar(@PathVariable Long id) {
+        return ResponseEntity.ok(matriculaService.reativar(id));
     }
 }

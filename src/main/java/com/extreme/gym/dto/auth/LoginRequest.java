@@ -26,4 +26,9 @@ public record LoginRequest(
     public String login() {
         return username;
     }
+
+    @Override
+    public String toString() {
+        return "LoginRequest[username=" + username + ", password=***]";
+    }
 }

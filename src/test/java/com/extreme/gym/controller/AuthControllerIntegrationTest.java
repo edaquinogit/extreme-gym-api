@@ -2,6 +2,7 @@ package com.extreme.gym.controller;
 
 import com.extreme.gym.entity.Usuario;
 import com.extreme.gym.enums.Role;
+import com.extreme.gym.config.AdminUserInitializer;
 import com.extreme.gym.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -59,6 +60,39 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.type").value("Bearer"))
                 .andExpect(jsonPath("$.expiresInSeconds").value(3600))
                 .andExpect(jsonPath("$.email").value("admin@email.com"))
+                .andExpect(jsonPath("$.role").value("ADMIN"))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+    }
+
+    @Test
+    void deveAutenticarAdminCriadoPorBootstrapComUsernameEAliasEmail() throws Exception {
+        AdminUserInitializer initializer = new AdminUserInitializer(
+                usuarioRepository,
+                passwordEncoder,
+                true,
+                "admin-bootstrap@email.com",
+                "admin-bootstrap",
+                "admin123Local!"
+        );
+        initializer.run();
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson("admin-bootstrap", "admin123Local!")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
+                .andExpect(jsonPath("$.username").value("admin-bootstrap"))
+                .andExpect(jsonPath("$.email").value("admin-bootstrap@email.com"))
+                .andExpect(jsonPath("$.role").value("ADMIN"))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginAliasEmailJson("admin-bootstrap@email.com", "admin123Local!")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
+                .andExpect(jsonPath("$.username").value("admin-bootstrap"))
+                .andExpect(jsonPath("$.email").value("admin-bootstrap@email.com"))
                 .andExpect(jsonPath("$.role").value("ADMIN"))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
@@ -226,6 +260,13 @@ class AuthControllerIntegrationTest {
         return objectMapper.writeValueAsString(Map.of(
                 "username", email,
                 "password", senha
+        ));
+    }
+
+    private String loginAliasEmailJson(String email, String senha) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "email", email,
+                "senha", senha
         ));
     }
 

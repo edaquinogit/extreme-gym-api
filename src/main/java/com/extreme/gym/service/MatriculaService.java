@@ -14,6 +14,7 @@ import com.extreme.gym.repository.PlanoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,9 +52,8 @@ public class MatriculaService {
 
     @Transactional(readOnly = true)
     public List<MatriculaResponseDTO> listar(Pageable pageable) {
-        return matriculaRepository.findAll(pageable)
-                .getContent()
-                .stream()
+        Page<Matricula> page = matriculaRepository.findAll(pageable);
+        return page.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
@@ -63,10 +63,27 @@ public class MatriculaService {
         return toResponseDTO(buscarEntidadePorId(id));
     }
 
+    @Transactional(readOnly = true)
+    public List<MatriculaResponseDTO> listarPorAluno(Long alunoId, Pageable pageable) {
+        return matriculaRepository.findByAlunoId(alunoId, pageable).stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     public MatriculaResponseDTO cancelar(Long id) {
         Matricula matricula = buscarEntidadePorId(id);
         matricula.setStatus(StatusMatricula.CANCELADA);
 
+        return toResponseDTO(matriculaRepository.save(matricula));
+    }
+
+    public MatriculaResponseDTO reativar(Long id) {
+        Matricula matricula = buscarEntidadePorId(id);
+        if (matricula.getStatus() == StatusMatricula.ATIVA) {
+            throw new BusinessException("Matricula ja esta ativa");
+        }
+        validarAlunoSemMatriculaAtiva(matricula.getAluno().getId());
+        matricula.setStatus(StatusMatricula.ATIVA);
         return toResponseDTO(matriculaRepository.save(matricula));
     }
 

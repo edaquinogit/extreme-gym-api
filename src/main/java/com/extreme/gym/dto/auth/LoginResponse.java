@@ -22,4 +22,15 @@ public record LoginResponse(
         @Schema(example = "RECEPCAO")
         Role role
 ) {
+    @Override
+    public String toString() {
+        return "LoginResponse[token=***, type=" + type
+                + ", expiresInSeconds=" + expiresInSeconds
+                + ", usuarioId=" + usuarioId
+                + ", nome=" + nome
+                + ", username=" + username
+                + ", email=" + email
+                + ", role=" + role
+                + "]";
+    }
 }

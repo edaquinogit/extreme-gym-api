@@ -3,6 +3,8 @@ package com.extreme.gym.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,10 +12,13 @@ import static org.mockito.Mockito.when;
 import com.extreme.gym.dto.aluno.AlunoRequestDTO;
 import com.extreme.gym.dto.aluno.AlunoResponseDTO;
 import com.extreme.gym.entity.Aluno;
+import com.extreme.gym.entity.CredencialAcesso;
 import com.extreme.gym.enums.StatusAluno;
+import com.extreme.gym.enums.TipoCredencialAcesso;
 import com.extreme.gym.exception.BusinessException;
 import com.extreme.gym.exception.ResourceNotFoundException;
 import com.extreme.gym.repository.AlunoRepository;
+import com.extreme.gym.repository.CredencialAcessoRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +37,9 @@ class AlunoServiceTest {
     @Mock
     private AlunoRepository alunoRepository;
 
+    @Mock
+    private CredencialAcessoRepository credencialRepository;
+
     @InjectMocks
     private AlunoService alunoService;
 
@@ -48,9 +56,12 @@ class AlunoServiceTest {
         when(alunoRepository.save(any(Aluno.class))).thenAnswer(invocation -> {
             Aluno aluno = invocation.getArgument(0);
             aluno.setId(1L);
-            aluno.setDataCadastro(dataCadastro);
+            aluno.setCriadoEm(dataCadastro);
             return aluno;
         });
+        when(credencialRepository.existsByTipoAndIdentificadorExterno(eq(TipoCredencialAcesso.PIN), anyString()))
+                .thenReturn(false);
+        when(credencialRepository.save(any(CredencialAcesso.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         AlunoResponseDTO response = alunoService.cadastrar(request);
 
@@ -61,6 +72,7 @@ class AlunoServiceTest {
         assertThat(response.status()).isEqualTo(StatusAluno.ATIVO);
         assertThat(response.dataCadastro()).isEqualTo(dataCadastro);
         verify(alunoRepository).save(any(Aluno.class));
+        verify(credencialRepository).save(any(CredencialAcesso.class));
     }
 
     @Test
@@ -93,7 +105,7 @@ class AlunoServiceTest {
         assertThat(response.email()).isEqualTo(aluno.getEmail());
         assertThat(response.telefone()).isEqualTo(aluno.getTelefone());
         assertThat(response.status()).isEqualTo(StatusAluno.ATIVO);
-        assertThat(response.dataCadastro()).isEqualTo(aluno.getDataCadastro());
+        assertThat(response.dataCadastro()).isEqualTo(aluno.getCriadoEm());
     }
 
     @Test
@@ -214,13 +226,14 @@ class AlunoServiceTest {
     }
 
     private Aluno criarAluno(Long id, String nome, String email, String telefone) {
-        return Aluno.builder()
+        Aluno aluno = Aluno.builder()
                 .id(id)
                 .nome(nome)
                 .email(email)
                 .telefone(telefone)
                 .status(StatusAluno.ATIVO)
-                .dataCadastro(LocalDateTime.now())
                 .build();
+        aluno.setCriadoEm(LocalDateTime.now());
+        return aluno;
     }
 }

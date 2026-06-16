@@ -72,6 +72,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
                     auth.requestMatchers("/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
                     auth.requestMatchers("/acessos/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.requestMatchers("/busca-global/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR", "CATRACA");
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

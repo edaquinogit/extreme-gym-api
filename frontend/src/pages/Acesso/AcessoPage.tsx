@@ -106,9 +106,9 @@ export function AcessoPage() {
       setCheckinMessage(null)
       const response = await checkinService.registrar(resultado.alunoId)
       setCheckinMessage(
-        response.permitido
+        response.status === 'AUTORIZADO'
           ? `Check-in registrado com sucesso para ${response.alunoNome ?? resultado.alunoNome}.`
-          : response.motivo ?? 'Check-in registrado com acesso bloqueado.',
+          : response.motivoBloqueio ?? 'Check-in registrado com acesso bloqueado.',
       )
       await loadRecentCheckins()
     } catch (error) {

@@ -5,7 +5,6 @@ type DataItem = { name: string; value: number }
 const COLORS: Record<string, string> = {
   PAGO: '#1a7a3c',
   PENDENTE: '#b7770d',
-  ATRASADO: '#c0392b',
   CANCELADO: '#6b7280',
 }
 

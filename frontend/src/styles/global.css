@@ -2604,6 +2604,240 @@ h1 {
   width: 68%;
 }
 
+.global-search {
+  position: relative;
+  min-width: min(32vw, 380px);
+}
+
+.global-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+}
+
+.global-search-field span {
+  color: var(--color-text-muted);
+}
+
+.global-search-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: var(--color-text);
+  background: transparent;
+}
+
+.global-search-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: min(480px, 90vw);
+  max-height: 520px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.global-search-message {
+  margin: 0;
+  padding: 10px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.global-search-group {
+  display: grid;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.global-search-group h3 {
+  margin: 0;
+  padding: 0 8px;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.global-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: transparent;
+  text-align: left;
+}
+
+.global-search-item:not(:disabled):hover {
+  background: var(--color-primary-hover);
+}
+
+.global-search-item:disabled {
+  opacity: 0.7;
+}
+
+.global-search-item strong,
+.global-search-item small {
+  display: block;
+}
+
+.global-search-item small {
+  color: var(--color-text-muted);
+}
+
+.global-search-item em {
+  color: var(--color-primary-strong);
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.access-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.access-filters label {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.access-filters span,
+.access-credential-item dt {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.access-filters select {
+  min-height: 40px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.access-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.access-section-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.access-credentials-panel {
+  display: grid;
+  gap: 0;
+}
+
+.access-credential-list {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.access-credential-item {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 2fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.access-credential-item strong,
+.access-credential-item span,
+.access-credential-item small {
+  display: block;
+}
+
+.access-credential-item small {
+  color: var(--color-text-muted);
+}
+
+.access-credential-item dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.access-credential-item dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.catraca-device-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.06);
+}
+
+.catraca-device-select select {
+  min-height: 38px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  background: #101f18;
+}
+
+.catraca-events-list {
+  display: grid;
+  gap: 8px;
+}
+
+.catraca-event-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.catraca-event-item strong,
+.catraca-event-item span {
+  display: block;
+}
+
+.catraca-event-item span {
+  color: rgba(255,255,255,0.58);
+  font-size: 0.85rem;
+}
+
 @media (max-width: 1120px) {
   .global-search {
     display: none;

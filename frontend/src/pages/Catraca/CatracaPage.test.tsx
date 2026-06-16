@@ -4,6 +4,8 @@ import { CatracaPage } from './CatracaPage'
 import { acessoService } from '../../services/acessoService'
 import { alunoService } from '../../services/alunoService'
 import { checkinService } from '../../services/checkinService'
+import { accessDeviceService } from '../../services/accessDeviceService'
+import { accessEventService } from '../../services/accessEventService'
 import { matriculaService } from '../../services/matriculaService'
 import { pagamentoService } from '../../services/pagamentoService'
 import { HttpError } from '../../services/httpClient'
@@ -26,6 +28,18 @@ vi.mock('../../services/checkinService', () => ({
   },
 }))
 
+vi.mock('../../services/accessDeviceService', () => ({
+  accessDeviceService: {
+    listar: vi.fn(),
+  },
+}))
+
+vi.mock('../../services/accessEventService', () => ({
+  accessEventService: {
+    listarHoje: vi.fn(),
+  },
+}))
+
 vi.mock('../../services/matriculaService', () => ({
   matriculaService: {
     listar: vi.fn(),
@@ -41,6 +55,8 @@ vi.mock('../../services/pagamentoService', () => ({
 const mockedAcessoService = vi.mocked(acessoService)
 const mockedAlunoService = vi.mocked(alunoService)
 const mockedCheckinService = vi.mocked(checkinService)
+const mockedAccessDeviceService = vi.mocked(accessDeviceService)
+const mockedAccessEventService = vi.mocked(accessEventService)
 const mockedMatriculaService = vi.mocked(matriculaService)
 const mockedPagamentoService = vi.mocked(pagamentoService)
 
@@ -61,11 +77,11 @@ describe('CatracaPage', () => {
       id: 1,
       alunoId: 10,
       alunoNome: 'Ana Silva',
-      permitido: true,
       dataHora: '2026-06-02T10:00:00',
       status: 'AUTORIZADO',
-      motivo: 'Acesso liberado.',
     })
+    mockedAccessDeviceService.listar.mockResolvedValue([])
+    mockedAccessEventService.listarHoje.mockResolvedValue([])
   })
 
   it('renders initial operational state without fake device telemetry', () => {
@@ -74,11 +90,11 @@ describe('CatracaPage', () => {
     expect(screen.getByText('Controle de Acesso')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Identificação do aluno' })).toBeInTheDocument()
     expect(screen.getByLabelText('ID do aluno')).toHaveFocus()
-    expect(screen.getByText('Contrato de gateway pendente')).toBeInTheDocument()
-    expect(screen.getByText('Não foi possível consultar o status da catraca.')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum dispositivo configurado')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum dispositivo cadastrado para esta estação.')).toBeInTheDocument()
     expect(screen.getByText('Aguardando validação de acesso.')).toBeInTheDocument()
     expect(screen.getByText('Use a busca manual quando a identificação automática não estiver disponível.')).toBeInTheDocument()
-    expect(screen.getByText('Nenhum acesso registrado hoje.')).toBeInTheDocument()
+    expect(screen.getByText('Os acessos liberados ou bloqueados aparecerão aqui.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Verificar acesso' })).toBeDisabled()
   })
 

@@ -16,12 +16,12 @@ export function CatracaDeviceStatusPanel({
       <section className="catraca-device-panel" aria-label="Status da catraca">
         <div>
           <span className="overview-label">Dispositivo</span>
-          <h2>Contrato de gateway pendente</h2>
+          <h2>Nenhum dispositivo configurado</h2>
         </div>
-        <p>Não foi possível consultar o status da catraca.</p>
+        <p>Nenhum dispositivo cadastrado para esta estação.</p>
         <p className="catraca-device-warning">
-          A validação automática pode estar indisponível. Use a operação manual
-          autorizada.
+          Cadastre uma catraca ou ponto de acesso para acompanhar o status
+          operacional. A integração com gateway físico continua pendente.
         </p>
       </section>
     )
@@ -66,16 +66,23 @@ export function CatracaDeviceStatusPanel({
           operação manual autorizada.
         </p>
       )}
+
+      {dispositivo.status === 'MANUTENCAO' && (
+        <p className="catraca-device-warning">
+          Dispositivo em manutenção. Não use este ponto como referência de
+          validação automática.
+        </p>
+      )}
     </section>
   )
 }
 
 function formatDeviceStatus(status: StatusDispositivoAcesso) {
   const labels: Record<StatusDispositivoAcesso, string> = {
-    ONLINE: 'Catraca conectada',
+    ATIVO: 'Ativo',
+    INATIVO: 'Inativo',
     OFFLINE: 'Catraca offline',
     MANUTENCAO: 'Em manutenção',
-    DESCONHECIDO: 'Status desconhecido',
   }
 
   return labels[status]
@@ -93,7 +100,7 @@ function formatOperationMode(mode: ModoOperacaoDispositivo) {
 
 function formatLastCommunication(value: string | null) {
   if (!value) {
-    return 'Sem comunicação registrada'
+    return 'Última comunicação não registrada.'
   }
 
   return new Intl.DateTimeFormat('pt-BR', {

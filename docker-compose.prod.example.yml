@@ -17,6 +17,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   app:
     build:
@@ -49,6 +54,11 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "5"
 
 volumes:
   extreme_prod_data:

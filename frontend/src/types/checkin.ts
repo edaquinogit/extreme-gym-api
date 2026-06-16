@@ -6,9 +6,7 @@ export type Checkin = {
   alunoNome?: string
   aluno?: { id: number; nome: string }
   matriculaId?: number | null
-  permitido: boolean
   dataHora: string
   status: StatusCheckin
-  motivo?: string
   motivoBloqueio?: string
 }

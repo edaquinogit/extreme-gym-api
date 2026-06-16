@@ -64,6 +64,15 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR");
                     auth.requestMatchers("/checkins/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
                     auth.requestMatchers("/acessos/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.requestMatchers(HttpMethod.GET, "/dispositivos-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/dispositivos-acesso/**").hasRole("ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/eventos-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/eventos-acesso/**").hasAnyRole("ADMIN", "CATRACA");
+                    auth.requestMatchers("/controle-acesso/**").hasAnyRole("ADMIN", "RECEPCAO", "CATRACA");
+                    auth.requestMatchers("/credenciais-acesso/**").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers(HttpMethod.GET, "/alunos/*/credenciais-acesso").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers(HttpMethod.POST, "/alunos/*/credenciais-acesso").hasAnyRole("ADMIN", "RECEPCAO");
+                    auth.requestMatchers("/busca-global/**").hasAnyRole("ADMIN", "RECEPCAO", "PROFESSOR", "CATRACA");
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

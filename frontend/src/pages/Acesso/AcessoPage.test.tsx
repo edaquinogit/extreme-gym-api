@@ -139,10 +139,8 @@ describe('AcessoPage', () => {
       id: 1,
       alunoId: 14,
       alunoNome: 'Daniel Costa',
-      permitido: true,
       dataHora: '2026-06-02T10:00:00',
       status: 'AUTORIZADO',
-      motivo: 'Acesso liberado.',
     })
 
     render(<AcessoPage />)

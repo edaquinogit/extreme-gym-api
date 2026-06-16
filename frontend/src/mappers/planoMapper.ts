@@ -25,7 +25,6 @@ export function planoApiToViewModel(api: PlanoAPI): Plano {
     valor: toNumber(api.valorMensal),
     duracaoDias: api.duracaoEmDias ?? undefined,
     status: ativoToStatus(api.ativo),
-    ativo: api.ativo ?? false,
     dataCadastro: api.dataCadastro ?? undefined,
   }
 }
